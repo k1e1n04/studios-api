@@ -1,8 +1,8 @@
 package example
 
 import (
-	modelExample "github.com/togisuma/standard-echo-serverless/example/domain/model.example"
-	repositoryExample "github.com/togisuma/standard-echo-serverless/example/domain/repository.example"
+	modelExample "github.com/togisuma/studios-api/example/domain/model.example"
+	repositoryExample "github.com/togisuma/studios-api/example/domain/repository.example"
 )
 
 // ExampleRepositoryImpl は Example リポジトリの実体

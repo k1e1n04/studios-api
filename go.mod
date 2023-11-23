@@ -1,4 +1,4 @@
-module github.com/togisuma/standard-echo-serverless
+module github.com/togisuma/studios-api
 
 go 1.20
 

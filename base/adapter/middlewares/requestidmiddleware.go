@@ -3,7 +3,7 @@ package middlewares
 import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/togisuma/standard-echo-serverless/base/config"
+	"github.com/togisuma/studios-api/base/config"
 )
 
 // RequestIDMiddleware リクエストIDを付与するミドルウェア

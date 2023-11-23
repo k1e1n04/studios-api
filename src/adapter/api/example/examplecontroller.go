@@ -2,7 +2,7 @@ package example
 
 import (
 	"github.com/labstack/echo/v4"
-	usecase_example "github.com/togisuma/standard-echo-serverless/example/usecase.example"
+	usecase_example "github.com/togisuma/studios-api/example/usecase.example"
 	"net/http"
 )
 

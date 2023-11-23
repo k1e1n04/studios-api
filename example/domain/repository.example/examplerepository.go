@@ -1,6 +1,6 @@
 package repository_example
 
-import modelExample "github.com/togisuma/standard-echo-serverless/example/domain/model.example"
+import modelExample "github.com/togisuma/studios-api/example/domain/model.example"
 
 // ExampleRepository は ExampleRepository のインターフェース
 type ExampleRepository interface {

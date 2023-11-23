@@ -1,7 +1,7 @@
 package usecase_example
 
 import (
-	repositoryExample "github.com/togisuma/standard-echo-serverless/example/domain/repository.example"
+	repositoryExample "github.com/togisuma/studios-api/example/domain/repository.example"
 )
 
 // ExampleService は Exampleサービス

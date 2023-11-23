@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/togisuma/standard-echo-serverless/src/adapter/api/example"
+	"github.com/togisuma/studios-api/src/adapter/api/example"
 	"go.uber.org/dig"
 )
 

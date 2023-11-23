@@ -12,7 +12,7 @@
 |        | figma    | {URL}    |
 |        | リリース手順書  | {URL}    |
 
-# standard-echo-serverless
+# studios-api
 ## 概要
 このリポジトリは Lambda 関数を利用した Echo API のサンプルです。
 
@@ -67,7 +67,7 @@
 ## 環境構築
 #### リポジトリのクローン
 ```bash
-git clone https://github.com/togisuma/standard-echo-serverless.git
+git clone https://github.com/togisuma/studios-api.git
 ```
 
 #### パッケージのインストール

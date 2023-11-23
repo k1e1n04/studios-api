@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"github.com/togisuma/standard-echo-serverless/base/config"
-	"github.com/togisuma/standard-echo-serverless/base/sharedkarnel/customlogger"
+	"github.com/togisuma/studios-api/base/config"
+	"github.com/togisuma/studios-api/base/sharedkarnel/customlogger"
 	"time"
 
 	"github.com/labstack/echo/v4"

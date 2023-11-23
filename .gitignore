@@ -43,4 +43,4 @@ echo
 
 # Docker
 docker-compose.yml
-docker/mysql/data/
+data/

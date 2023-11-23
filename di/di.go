@@ -1,10 +1,10 @@
 package di
 
 import (
-	repositoryExample "github.com/togisuma/standard-echo-serverless/example/domain/repository.example"
-	usecaseExample "github.com/togisuma/standard-echo-serverless/example/usecase.example"
-	controllerExample "github.com/togisuma/standard-echo-serverless/src/adapter/api/example"
-	repositoryExampleImpl "github.com/togisuma/standard-echo-serverless/src/adapter/infra/repository/example"
+	repositoryExample "github.com/togisuma/studios-api/example/domain/repository.example"
+	usecaseExample "github.com/togisuma/studios-api/example/usecase.example"
+	controllerExample "github.com/togisuma/studios-api/src/adapter/api/example"
+	repositoryExampleImpl "github.com/togisuma/studios-api/src/adapter/infra/repository/example"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )

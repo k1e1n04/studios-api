@@ -4,9 +4,9 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/togisuma/standard-echo-serverless/base"
-	"github.com/togisuma/standard-echo-serverless/base/config"
-	"github.com/togisuma/standard-echo-serverless/base/sharedkarnel/model/customerrors"
+	"github.com/togisuma/studios-api/base"
+	"github.com/togisuma/studios-api/base/config"
+	"github.com/togisuma/studios-api/base/sharedkarnel/model/customerrors"
 	"go.uber.org/zap"
 	"net/http"
 )
