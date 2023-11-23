@@ -1,4 +1,4 @@
-package example
+package study
 
 import (
 	modelExample "github.com/k1e1n04/studios-api/example/domain/model.example"
