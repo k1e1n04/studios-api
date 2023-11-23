@@ -1,4 +1,4 @@
-module github.com/togisuma/studios-api
+module github.com/k1e1n04/studios-api
 
 go 1.20
 

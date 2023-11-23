@@ -1,8 +1,8 @@
 package example
 
 import (
-	modelExample "github.com/togisuma/studios-api/example/domain/model.example"
-	repositoryExample "github.com/togisuma/studios-api/example/domain/repository.example"
+	modelExample "github.com/k1e1n04/studios-api/example/domain/model.example"
+	repositoryExample "github.com/k1e1n04/studios-api/example/domain/repository.example"
 )
 
 // ExampleRepositoryImpl は Example リポジトリの実体

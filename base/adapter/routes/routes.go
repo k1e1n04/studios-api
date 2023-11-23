@@ -1,8 +1,8 @@
 package routes
 
 import (
+	"github.com/k1e1n04/studios-api/src/adapter/api/example"
 	"github.com/labstack/echo/v4"
-	"github.com/togisuma/studios-api/src/adapter/api/example"
 	"go.uber.org/dig"
 )
 

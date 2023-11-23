@@ -67,7 +67,7 @@
 ## 環境構築
 #### リポジトリのクローン
 ```bash
-git clone https://github.com/togisuma/studios-api.git
+git clone https://github.com/k1e1n04/studios-api.git
 ```
 
 #### パッケージのインストール

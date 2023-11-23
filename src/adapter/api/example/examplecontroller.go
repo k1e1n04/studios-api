@@ -1,8 +1,8 @@
 package example
 
 import (
+	usecase_example "github.com/k1e1n04/studios-api/example/usecase.example"
 	"github.com/labstack/echo/v4"
-	usecase_example "github.com/togisuma/studios-api/example/usecase.example"
 	"net/http"
 )
 

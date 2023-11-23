@@ -1,7 +1,7 @@
 package usecase_example
 
 import (
-	repositoryExample "github.com/togisuma/studios-api/example/domain/repository.example"
+	repositoryExample "github.com/k1e1n04/studios-api/example/domain/repository.example"
 )
 
 // ExampleService は Exampleサービス

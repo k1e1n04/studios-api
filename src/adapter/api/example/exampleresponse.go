@@ -1,6 +1,6 @@
 package example
 
-import usecaseExample "github.com/togisuma/studios-api/example/usecase.example"
+import usecaseExample "github.com/k1e1n04/studios-api/example/usecase.example"
 
 // ExampleResponse は Exampleレスポンスの構造体
 type ExampleResponse struct {
