@@ -1,0 +1,46 @@
+# Compiled binaries and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Log files
+*.log
+
+# Directories
+vendor/
+node_modules/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Binary, build output
+/bin/
+/build/
+.bin/
+
+# IDE/Editor Folders
+.idea/
+.vscode/
+
+# Serverless directories
+.serverless/
+
+# Echo framework files
+echo
+
+# Go
+*.out
+
+# Secret files
+*.pem
+*.key
+.secrets/
+
+# Environment files
+.env
+
+# Docker
+docker-compose.yml
+docker/mysql/data/
