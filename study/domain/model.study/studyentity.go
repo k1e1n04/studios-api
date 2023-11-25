@@ -1,7 +1,8 @@
 package model_study
 
 import (
-	"github.com/google/uuid"
+	"github.com/oklog/ulid"
+	"math/rand"
 	"time"
 )
 
@@ -17,8 +18,11 @@ type StudyEntity struct {
 
 // NewStudyEntity は StudyEntity を生成
 func NewStudyEntity(title, tags, content string) *StudyEntity {
+	t := time.Now()
+	entropy := rand.New(rand.NewSource(t.UnixNano()))
+	id := ulid.MustNew(ulid.Timestamp(t), entropy)
 	return &StudyEntity{
-		ID:          uuid.New().String(),
+		ID:          id.String(),
 		Title:       title,
 		Tags:        tags,
 		Content:     content,
