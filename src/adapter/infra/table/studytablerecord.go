@@ -11,7 +11,7 @@ type StudyTableRecord struct {
 	// Content は 内容
 	Content string `json:"content"`
 	// CreatedDate は 作成日時
-	CreatedDate string `json:"created_date"`
+	CreatedDate string `json:"createdDate"`
 	// UpdatedDate は 更新日時
-	UpdatedDate string `json:"updated_date"`
+	UpdatedDate string `json:"updatedDate"`
 }

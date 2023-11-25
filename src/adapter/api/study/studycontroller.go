@@ -8,29 +8,73 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"net/http"
+	"strconv"
 )
 
 // StudyController は Studyコントローラ
 type StudyController struct {
 	studyRegisterService usecase_study.StudyRegisterService
+	studiesPageService   usecase_study.StudiesPageService
 }
 
 // NewStudyController は StudyController を生成
-func NewStudyController(studyRegisterService usecase_study.StudyRegisterService) StudyController {
+func NewStudyController(
+	studyRegisterService usecase_study.StudyRegisterService,
+	studiesPageService usecase_study.StudiesPageService,
+) StudyController {
 	return StudyController{
 		studyRegisterService: studyRegisterService,
+		studiesPageService:   studiesPageService,
 	}
 }
 
 // toStudyRegisterResponse は StudyRegisterResponse を生成
 func toStudyRegisterResponse(dto *usecase_study.StudyDTO) *StudyRegisterResponse {
+	// CreatedDate, UpdatedDate を time.Time から string に変換
+	const customDateFormat = "2006-01-02"
+
+	createdDateStr := dto.CreatedDate.Format(customDateFormat)
+	updatedDateStr := dto.UpdatedDate.Format(customDateFormat)
+
 	return &StudyRegisterResponse{
 		ID:          dto.ID,
 		Title:       dto.Title,
 		Tags:        dto.Tags,
 		Content:     dto.Content,
-		CreatedDate: dto.CreatedDate,
-		UpdatedDate: dto.UpdatedDate,
+		CreatedDate: createdDateStr,
+		UpdatedDate: updatedDateStr,
+	}
+}
+
+// toStudyResponse は StudyResponse を生成
+func toStudyResponse(dto *usecase_study.StudyDTO) *StudyResponse {
+	// CreatedDate, UpdatedDate を time.Time から string に変換
+	const customDateFormat = "2006-01-02"
+
+	createdDateStr := dto.CreatedDate.Format(customDateFormat)
+	updatedDateStr := dto.UpdatedDate.Format(customDateFormat)
+	return &StudyResponse{
+		ID:          dto.ID,
+		Title:       dto.Title,
+		Tags:        dto.Tags,
+		Content:     dto.Content,
+		CreatedDate: createdDateStr,
+		UpdatedDate: updatedDateStr,
+	}
+}
+
+// toStudiesPageResponse は StudiesPageResponse を生成
+func toStudiesPageResponse(dto *usecase_study.StudiesPageDTO) *StudiesPageResponse {
+	// 学習DTOのスライスを生成
+	studyResponses := make([]*StudyResponse, len(dto.Studies))
+	for i, study := range dto.Studies {
+		studyResponses[i] = toStudyResponse(study)
+	}
+
+	return &StudiesPageResponse{
+		Studies:          studyResponses,
+		LastEvaluatedKey: dto.LastEvaluatedKey,
+		TotalCount:       dto.TotalCount,
 	}
 }
 
@@ -61,4 +105,30 @@ func (sc *StudyController) Register(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, toStudyRegisterResponse(dto))
+}
+
+// GetStudies は 学習一覧ページを取得
+func (sc *StudyController) GetStudies(c echo.Context) error {
+	// ロガーをコンテキストから取得
+	logger := c.Get(config.LoggerKey).(*zap.Logger)
+	// パラメータを取得
+	title := c.QueryParam("title")
+	tags := c.QueryParam("tags")
+	lastEvaluatedKey := c.QueryParam("lastEvaluatedKey")
+	size := c.QueryParam("size")
+	// size を int に変換
+	limit, err := strconv.Atoi(size)
+	if err != nil {
+		logger.Warn("size の変換に失敗しました", zap.Error(err))
+		return customerrors.NewBadRequestError(
+			"size の変換に失敗しました",
+			base.InvalidSize,
+			err,
+		)
+	}
+	dto, err := sc.studiesPageService.Get(title, tags, limit, lastEvaluatedKey)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, toStudiesPageResponse(dto))
 }

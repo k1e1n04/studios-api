@@ -31,7 +31,10 @@ func toStudyTableRecordFromDynamoDBItem(study *map[string]*dynamodb.AttributeVal
 	var studyTableRecord table.StudyTableRecord
 	err := dynamodbattribute.UnmarshalMap(*study, &studyTableRecord)
 	if err != nil {
-		return nil, err
+		return nil, customerrors.NewInternalServerError(
+			fmt.Sprintf("学習テーブルレコードの変換に失敗しました。 study: %v", study),
+			err,
+		)
 	}
 	return &studyTableRecord, nil
 }
@@ -193,56 +196,66 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 
 // GetStudiesByTitleOrTags はタイトルまたはタグでスタディを検索し、GSIを使用して全体を検索する
 func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tags string, limit int, exclusiveStartKey string) ([]*model_study.StudyEntity, string, error) {
-	var queryInput *dynamodb.QueryInput
 	var lastEvaluatedKeyMap map[string]*dynamodb.AttributeValue
 
-	// ExclusiveStartKey を設定（ページネーションの開始点）
 	if exclusiveStartKey != "" {
-		lastEvaluatedKeyMap = map[string]*dynamodb.AttributeValue{
-			"ID": {S: aws.String(exclusiveStartKey)},
-		}
+		lastEvaluatedKeyMap = map[string]*dynamodb.AttributeValue{"ID": {S: aws.String(exclusiveStartKey)}}
 	}
 
-	// タイトルやタグによってクエリを構築
-	if title != "" {
-		queryInput = &dynamodb.QueryInput{
-			TableName:                 aws.String(r.table),
-			IndexName:                 aws.String("TitleIndex"),
-			KeyConditionExpression:    aws.String("Title = :title"),
-			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{":title": {S: aws.String(title)}},
-			Limit:                     aws.Int64(int64(limit)),
-			ExclusiveStartKey:         lastEvaluatedKeyMap,
-		}
-	} else if tags != "" {
-		queryInput = &dynamodb.QueryInput{
-			TableName:                 aws.String(r.table),
-			IndexName:                 aws.String("TagsIndex"),
-			KeyConditionExpression:    aws.String("Tags = :tags"),
-			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{":tags": {S: aws.String(tags)}},
-			Limit:                     aws.Int64(int64(limit)),
-			ExclusiveStartKey:         lastEvaluatedKeyMap,
-		}
-	} else {
-		// ここで全件取得のための設定を行う（省略）
-		queryInput = &dynamodb.QueryInput{
+	var studies []*model_study.StudyEntity
+	var items []map[string]*dynamodb.AttributeValue
+	var lastEvaluatedKey map[string]*dynamodb.AttributeValue
+	var err error
+
+	if title != "" || tags != "" {
+		queryInput := &dynamodb.QueryInput{
 			TableName:         aws.String(r.table),
 			Limit:             aws.Int64(int64(limit)),
 			ExclusiveStartKey: lastEvaluatedKeyMap,
 		}
+
+		if title != "" {
+			queryInput.IndexName = aws.String("TitleIndex")
+			queryInput.KeyConditionExpression = aws.String("title = :title")
+			queryInput.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{":title": {S: aws.String(title)}}
+		} else if tags != "" {
+			queryInput.IndexName = aws.String("TagsIndex")
+			queryInput.KeyConditionExpression = aws.String("tags = :tags")
+			queryInput.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{":tags": {S: aws.String(tags)}}
+		}
+
+		var result *dynamodb.QueryOutput
+		result, err = r.db.Query(queryInput)
+		if err != nil {
+			return nil, "", customerrors.NewInternalServerError(
+				fmt.Sprintf("スタディの検索に失敗しました。 title: %s, tags: %s", title, tags),
+				err,
+			)
+		}
+
+		items = result.Items
+		lastEvaluatedKey = result.LastEvaluatedKey
+	} else {
+		scanInput := &dynamodb.ScanInput{
+			TableName:         aws.String(r.table),
+			Limit:             aws.Int64(int64(limit)),
+			ExclusiveStartKey: lastEvaluatedKeyMap,
+		}
+
+		var result *dynamodb.ScanOutput
+		result, err = r.db.Scan(scanInput)
+		if err != nil {
+			return nil, "", customerrors.NewInternalServerError(
+				fmt.Sprintf("スタディの検索に失敗しました。 title: %s, tags: %s", title, tags),
+				err,
+			)
+		}
+
+		items = result.Items
+		lastEvaluatedKey = result.LastEvaluatedKey
 	}
 
-	// クエリの実行
-	result, err := r.db.Query(queryInput)
-	if err != nil {
-		return nil, "", customerrors.NewInternalServerError(
-			fmt.Sprintf("スタディの取得に失敗しました。 title: %s, tags: %s", title, tags),
-			err,
-		)
-	}
-
-	// 結果の変換
-	var studies []*model_study.StudyEntity
-	for _, item := range result.Items {
+	for _, item := range items {
 		studyTableRecord, err := toStudyTableRecordFromDynamoDBItem(&item)
 		if err != nil {
 			return nil, "", err
@@ -254,10 +267,9 @@ func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tags string,
 		studies = append(studies, study)
 	}
 
-	// LastEvaluatedKey を次のページネーションキーとして設定
 	var nextExclusiveStartKey string
-	if result.LastEvaluatedKey != nil {
-		nextExclusiveStartKey = *result.LastEvaluatedKey["ID"].S
+	if lastEvaluatedKey != nil {
+		nextExclusiveStartKey = *lastEvaluatedKey["ID"].S
 	}
 
 	return studies, nextExclusiveStartKey, nil
