@@ -2,8 +2,10 @@ package study
 
 import (
 	"github.com/k1e1n04/studios-api/base"
+	pagenation2 "github.com/k1e1n04/studios-api/base/adapter/api/pagenation"
 	"github.com/k1e1n04/studios-api/base/config"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
+	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
 	usecase_study "github.com/k1e1n04/studios-api/study/usecase.study"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -28,6 +30,14 @@ func NewStudyController(
 	}
 }
 
+// toTagResponse は TagResponse を生成
+func toTagResponse(dto *usecase_study.TagDTO) *TagResponse {
+	return &TagResponse{
+		ID:   dto.ID,
+		Name: dto.Name,
+	}
+}
+
 // toStudyRegisterResponse は StudyRegisterResponse を生成
 func toStudyRegisterResponse(dto *usecase_study.StudyDTO) *StudyRegisterResponse {
 	// CreatedDate, UpdatedDate を time.Time から string に変換
@@ -36,10 +46,15 @@ func toStudyRegisterResponse(dto *usecase_study.StudyDTO) *StudyRegisterResponse
 	createdDateStr := dto.CreatedDate.Format(customDateFormat)
 	updatedDateStr := dto.UpdatedDate.Format(customDateFormat)
 
+	tags := make([]*TagResponse, len(dto.Tags))
+	for i, tag := range dto.Tags {
+		tags[i] = toTagResponse(tag)
+	}
+
 	return &StudyRegisterResponse{
 		ID:          dto.ID,
 		Title:       dto.Title,
-		Tags:        dto.Tags,
+		Tags:        tags,
 		Content:     dto.Content,
 		CreatedDate: createdDateStr,
 		UpdatedDate: updatedDateStr,
@@ -53,10 +68,15 @@ func toStudyResponse(dto *usecase_study.StudyDTO) *StudyResponse {
 
 	createdDateStr := dto.CreatedDate.Format(customDateFormat)
 	updatedDateStr := dto.UpdatedDate.Format(customDateFormat)
+
+	tags := make([]*TagResponse, len(dto.Tags))
+	for i, tag := range dto.Tags {
+		tags[i] = toTagResponse(tag)
+	}
 	return &StudyResponse{
 		ID:          dto.ID,
 		Title:       dto.Title,
-		Tags:        dto.Tags,
+		Tags:        tags,
 		Content:     dto.Content,
 		CreatedDate: createdDateStr,
 		UpdatedDate: updatedDateStr,
@@ -72,9 +92,13 @@ func toStudiesPageResponse(dto *usecase_study.StudiesPageDTO) *StudiesPageRespon
 	}
 
 	return &StudiesPageResponse{
-		Studies:          studyResponses,
-		LastEvaluatedKey: dto.LastEvaluatedKey,
-		TotalCount:       dto.TotalCount,
+		Studies: studyResponses,
+		Page: pagenation2.PageResponse{
+			TotalElements: dto.Page.TotalElements,
+			TotalPages:    dto.Page.TotalPages,
+			PageNumber:    dto.Page.PageNumber,
+			PageElements:  dto.Page.PageElements,
+		},
 	}
 }
 
@@ -113,11 +137,27 @@ func (sc *StudyController) GetStudies(c echo.Context) error {
 	logger := c.Get(config.LoggerKey).(*zap.Logger)
 	// パラメータを取得
 	title := c.QueryParam("title")
-	tags := c.QueryParam("tags")
-	lastEvaluatedKey := c.QueryParam("lastEvaluatedKey")
-	size := c.QueryParam("size")
-	// size を int に変換
-	limit, err := strconv.Atoi(size)
+	tag := c.QueryParam("tag")
+	page := c.QueryParam("page")
+	limit := c.QueryParam("limit")
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		logger.Warn("クエリパラメータが不正です。", zap.Error(err))
+		return customerrors.NewBadRequestError(
+			"クエリパラメータが不正です。",
+			base.InvalidPageNumber,
+			err,
+		)
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		logger.Warn("クエリパラメータが不正です。", zap.Error(err))
+		return customerrors.NewBadRequestError(
+			"クエリパラメータが不正です。",
+			base.InvalidLimit,
+			err,
+		)
+	}
 	if err != nil {
 		logger.Warn("size の変換に失敗しました", zap.Error(err))
 		return customerrors.NewBadRequestError(
@@ -126,7 +166,13 @@ func (sc *StudyController) GetStudies(c echo.Context) error {
 			err,
 		)
 	}
-	dto, err := sc.studiesPageService.Get(title, tags, limit, lastEvaluatedKey)
+	dto, err := sc.studiesPageService.Get(
+		usecase_study.StudiesPageParam{
+			Title: title,
+			Tag:   tag,
+		},
+		*pagenation.NewPageable(pageInt, limitInt),
+	)
 	if err != nil {
 		return err
 	}

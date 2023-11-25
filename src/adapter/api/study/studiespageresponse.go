@@ -1,11 +1,11 @@
 package study
 
+import "github.com/k1e1n04/studios-api/base/adapter/api/pagenation"
+
 // StudiesPageResponse は 学習ページレスポンス
 type StudiesPageResponse struct {
+	// Page は ページ
+	Page pagenation.PageResponse `json:"page"`
 	// Studies は 学習
 	Studies []*StudyResponse `json:"studies"`
-	// LastEvaluatedKey は 最後に評価されたキー
-	LastEvaluatedKey string `json:"lastEvaluatedKey"`
-	// TotalCount は 総数
-	TotalCount int `json:"totalCount"`
 }

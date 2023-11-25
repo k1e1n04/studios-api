@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/joho/godotenv"
+	"github.com/k1e1n04/gosmm/v2/pkg/gosmm"
 	"github.com/k1e1n04/studios-api/base/adapter/api/errorhandler"
 	"github.com/k1e1n04/studios-api/base/adapter/api/validator"
 	"github.com/k1e1n04/studios-api/base/adapter/middlewares"
@@ -43,6 +44,7 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Printf(".env ファイルが存在しませんでした。")
 	}
+	migrate()
 	env := os.Getenv("ENV")
 	if env == "Local" {
 		e := initLocalApp()
@@ -107,5 +109,30 @@ func setMiddleware(e *echo.Echo, logger *zap.Logger) {
 func setErrorHandler(e *echo.Echo) {
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		log.Printf("error: %v", err)
+	}
+}
+
+// migrate マイグレーションを実行
+func migrate() {
+	driver := "postgres"
+	config := gosmm.DBConfig{
+		Driver:   driver,
+		Host:     os.Getenv("DB_HOST"),
+		Port:     3306,
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		DBName:   os.Getenv("DB_NAME"),
+	}
+	db, err := gosmm.ConnectDB(config)
+	if err != nil {
+		log.Fatalf("Connection failed: %v", err)
+	}
+	err = gosmm.Migrate(db, os.Getenv("MIGRATIONS_DIR"), driver)
+	if err != nil {
+		log.Fatalf("Migration failed: %v", err)
+	}
+	err = gosmm.CloseDB(db)
+	if err != nil {
+		log.Fatalf("Connection failed: %v", err)
 	}
 }

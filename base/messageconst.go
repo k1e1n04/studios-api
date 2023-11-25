@@ -5,6 +5,8 @@ const (
 	BadRequestError     = "リクエストが不正です。"
 	ConflictError       = "他のユーザーによって操作が行われたため、処理を中断しました。"
 	InvalidJSONError    = "JSONの形式が不正です。"
+	InvalidPageNumber   = "ページ番号が不正です。"
+	InvalidLimit        = "ページサイズが不正です。"
 	InvalidSize         = "サイズが不正です。"
 	// 認証
 	AuthenticationFailed         = "認証に失敗しました。ユーザー名またはパスワードが正しくありません。"

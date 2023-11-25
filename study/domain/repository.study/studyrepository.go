@@ -1,6 +1,9 @@
 package repository_study
 
-import model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
+import (
+	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
+	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
+)
 
 type StudyRepository interface {
 	// CreateStudy は 学習を作成
@@ -12,5 +15,5 @@ type StudyRepository interface {
 	// GetStudyByID は 学習を取得
 	GetStudyByID(id string) (*model_study.StudyEntity, error)
 	// GetStudiesByTitleOrTags は タイトルまたはタグから学習を取得
-	GetStudiesByTitleOrTags(title string, tags string, limit int, exclusiveStartKey string) ([]*model_study.StudyEntity, string, error)
+	GetStudiesByTitleOrTags(title string, tagId string, pageable pagenation.Pageable) (*model_study.StudiesPage, error)
 }

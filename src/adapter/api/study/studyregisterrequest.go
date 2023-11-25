@@ -7,5 +7,5 @@ type StudyRegisterRequest struct {
 	// Content は 内容
 	Content string `json:"content" form:"content" validate:"required"`
 	// Tags は タグ
-	Tags string `json:"tags" form:"tags" validate:"required"`
+	Tags []string `json:"tags" form:"tags" validate:"required"`
 }

@@ -1,6 +1,7 @@
 package usecase_study
 
 import (
+	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repository_study "github.com/k1e1n04/studios-api/study/domain/repository.study"
 )
@@ -18,30 +19,34 @@ func NewStudiesPageService(studyRepository repository_study.StudyRepository) Stu
 }
 
 // toStudiesPageDTO は 学習ページDTOに変換
-func toStudiesPageDTO(studies []*model_study.StudyEntity, nextExclusiveStartKey string) *StudiesPageDTO {
+func toStudiesPageDTO(studiesPage *model_study.StudiesPage) *StudiesPageDTO {
 	// 学習DTOのスライスを生成
-	studyDTOs := make([]*StudyDTO, len(studies))
-	for i, study := range studies {
+	studyDTOs := make([]*StudyDTO, len(studiesPage.Studies))
+	for i, study := range studiesPage.Studies {
 		studyDTOs[i] = toStudyDTO(study)
 	}
 
 	return &StudiesPageDTO{
-		Studies:          studyDTOs,
-		LastEvaluatedKey: nextExclusiveStartKey,
-		TotalCount:       len(studies),
+		Studies: studyDTOs,
+		Page: pagenation.PageDTO{
+			TotalElements: studiesPage.Page.TotalElements,
+			TotalPages:    studiesPage.Page.TotalPages,
+			PageElements:  studiesPage.Page.PageElements,
+			PageNumber:    studiesPage.Page.PageNumber,
+		},
 	}
 }
 
 // Get は 学習ページを取得
-func (sps *StudiesPageService) Get(title string, tags string, limit int, exclusiveStartKey string) (*StudiesPageDTO, error) {
+func (sps *StudiesPageService) Get(param StudiesPageParam, pageable pagenation.Pageable) (*StudiesPageDTO, error) {
 	// 学習を取得
-	studies, nextExclusiveStartKey, err := sps.studyRepository.GetStudiesByTitleOrTags(title, tags, limit, exclusiveStartKey)
+	entity, err := sps.studyRepository.GetStudiesByTitleOrTags(param.Title, param.Tag, pageable)
 	if err != nil {
 		return nil, err
 	}
 
 	// 学習ページDTOを生成
-	studiesPageDTO := toStudiesPageDTO(studies, nextExclusiveStartKey)
+	studiesPageDTO := toStudiesPageDTO(entity)
 
 	return studiesPageDTO, nil
 }

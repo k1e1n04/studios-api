@@ -10,46 +10,31 @@ import (
 type StudyEntity struct {
 	ID          string
 	Title       string
-	Tags        string
+	Tags        []*TagEntity
 	Content     string
 	CreatedDate time.Time
 	UpdatedDate time.Time
 }
 
 // NewStudyEntity は StudyEntity を生成
-func NewStudyEntity(title, tags, content string) *StudyEntity {
+func NewStudyEntity(title, content string, tags []*TagEntity) *StudyEntity {
 	t := time.Now()
 	entropy := rand.New(rand.NewSource(t.UnixNano()))
 	id := ulid.MustNew(ulid.Timestamp(t), entropy)
 	return &StudyEntity{
 		ID:          id.String(),
 		Title:       title,
-		Tags:        tags,
 		Content:     content,
+		Tags:        tags,
 		CreatedDate: time.Now(),
 		UpdatedDate: time.Now(),
 	}
 }
 
 // Update は StudyEntity を更新
-func (s *StudyEntity) Update(title, tags, content string) {
+func (s *StudyEntity) Update(title, content string, tags []*TagEntity) {
 	s.Title = title
-	s.Tags = tags
 	s.Content = content
+	s.Tags = tags
 	s.UpdatedDate = time.Now()
-}
-
-// FromDynamoDB は DynamoDB のアイテムから StudyEntity を生成
-func FromDynamoDB(dynamodbItem map[string]string) *StudyEntity {
-	createdDate, _ := time.Parse(time.RFC3339, dynamodbItem["created_date"])
-	updatedDate, _ := time.Parse(time.RFC3339, dynamodbItem["updated_date"])
-
-	return &StudyEntity{
-		ID:          dynamodbItem["id"],
-		Title:       dynamodbItem["title"],
-		Tags:        dynamodbItem["tags"],
-		Content:     dynamodbItem["content"],
-		CreatedDate: createdDate,
-		UpdatedDate: updatedDate,
-	}
 }

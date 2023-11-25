@@ -7,7 +7,7 @@ type StudyResponse struct {
 	// Title は タイトル
 	Title string `json:"title"`
 	// Tags は タグ
-	Tags string `json:"tags"`
+	Tags []*TagResponse `json:"tags"`
 	// Content は 内容
 	Content string `json:"content"`
 	// CreatedDate は 作成日

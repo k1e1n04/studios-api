@@ -1,146 +1,105 @@
 package study
 
 import (
+	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
+	pagenation2 "github.com/k1e1n04/studios-api/base/sharedkarnel/model/pagenation"
+	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
 	"github.com/k1e1n04/studios-api/src/adapter/infra/table"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repository_study "github.com/k1e1n04/studios-api/study/domain/repository.study"
-	"os"
-	"time"
+	"gorm.io/gorm"
 )
 
 type StudyRepositoryImpl struct {
-	db    *dynamodb.DynamoDB
-	table string
+	db *gorm.DB
 }
 
 // NewStudyRepository は StudyRepository を生成
-func NewStudyRepository(db *dynamodb.DynamoDB) repository_study.StudyRepository {
+func NewStudyRepository(db *gorm.DB) repository_study.StudyRepository {
 	return &StudyRepositoryImpl{
-		db:    db,
-		table: os.Getenv("STUDY_TABLE_NAME"),
+		db: db,
 	}
 }
 
-// toStudyTableRecordFromDynamoDBItem は DynamoDBのItemから学習テーブルレコードに変換
-func toStudyTableRecordFromDynamoDBItem(study *map[string]*dynamodb.AttributeValue) (*table.StudyTableRecord, error) {
-	var studyTableRecord table.StudyTableRecord
-	err := dynamodbattribute.UnmarshalMap(*study, &studyTableRecord)
-	if err != nil {
-		return nil, customerrors.NewInternalServerError(
-			fmt.Sprintf("学習テーブルレコードの変換に失敗しました。 study: %v", study),
-			err,
-		)
+// toStudyTableRecord は 学習テーブルレコードを生成
+func toStudyTableRecord(study *model_study.StudyEntity) *table.Study {
+	tags := make([]*table.Tag, len(study.Tags))
+	for i, tag := range study.Tags {
+		tags[i] = toTagTableRecord(tag)
 	}
-	return &studyTableRecord, nil
-}
-
-// toStudyTableRecordFromEntity は 学習エンティティから学習テーブルレコードに変換
-func toStudyTableRecordFromEntity(study *model_study.StudyEntity) (*table.StudyTableRecord, error) {
-	// 日付フォーマットを指定
-	const dateFormat = "2006-01-02"
-
-	// time.Time型の日付をstring型に変換する
-	createdDate := study.CreatedDate.Format(dateFormat)
-	updatedDate := study.UpdatedDate.Format(dateFormat)
-
-	return &table.StudyTableRecord{
+	return &table.Study{
 		ID:          study.ID,
 		Title:       study.Title,
-		Tags:        study.Tags,
 		Content:     study.Content,
-		CreatedDate: createdDate,
-		UpdatedDate: updatedDate,
-	}, nil
+		Tags:        tags,
+		CreatedDate: study.CreatedDate,
+		UpdatedDate: study.UpdatedDate,
+	}
 }
 
 // toStudyEntity は 学習テーブルレコードを学習エンティティに変換
-func toStudyEntity(study *table.StudyTableRecord) (*model_study.StudyEntity, error) {
-	// 日付フォーマットを指定
-	const dateFormat = "2006-01-02"
-
-	// string型の日付をtime.Time型に変換する
-	createdDate, err := time.Parse(dateFormat, study.CreatedDate)
-	if err != nil {
-		return nil, customerrors.NewInternalServerError(
-			fmt.Sprintf("作成日の変換に失敗しました。 id: %s, createdDate: %s", study.ID, study.CreatedDate),
-			err,
-		)
-	}
-
-	updatedDate, err := time.Parse(dateFormat, study.UpdatedDate)
-	if err != nil {
-		return nil, customerrors.NewInternalServerError(
-			fmt.Sprintf("更新日の変換に失敗しました。 id: %s, updatedDate: %s", study.ID, study.UpdatedDate),
-			err,
-		)
+func toStudyEntity(study *table.Study) *model_study.StudyEntity {
+	tagEntities := make([]*model_study.TagEntity, len(study.Tags))
+	for i, tag := range study.Tags {
+		tagEntity := toTagEntity(tag)
+		tagEntities[i] = tagEntity
 	}
 	return &model_study.StudyEntity{
 		ID:          study.ID,
 		Title:       study.Title,
-		Tags:        study.Tags,
 		Content:     study.Content,
-		CreatedDate: createdDate,
-		UpdatedDate: updatedDate,
-	}, nil
+		Tags:        tagEntities,
+		CreatedDate: study.CreatedDate,
+		UpdatedDate: study.UpdatedDate,
+	}
+}
+
+func toStudiesPage(studies []*table.Study, totalRecords int, pageable pagenation.Pageable) *model_study.StudiesPage {
+	studyEntities := make([]*model_study.StudyEntity, len(studies))
+	for i, study := range studies {
+		studyEntity := toStudyEntity(study)
+		studyEntities[i] = studyEntity
+	}
+
+	totalPages := totalRecords / pageable.Limit
+	if totalRecords%pageable.Limit != 0 {
+		totalPages++
+	}
+
+	return &model_study.StudiesPage{
+		Page: pagenation2.Page{
+			TotalElements: totalRecords,
+			TotalPages:    totalPages,
+			PageNumber:    pageable.Page,
+			PageElements:  len(studies),
+		},
+		Studies: studyEntities,
+	}
 }
 
 // CreateStudy はスタディを作成
 func (r *StudyRepositoryImpl) CreateStudy(study *model_study.StudyEntity) error {
-	studyTableRecord, err := toStudyTableRecordFromEntity(study)
-	if err != nil {
-		return err
-	}
-	input := &dynamodb.PutItemInput{
-		TableName: aws.String(r.table),
-		Item: map[string]*dynamodb.AttributeValue{
-			"id":          {S: aws.String(studyTableRecord.ID)},
-			"title":       {S: aws.String(studyTableRecord.Title)},
-			"tags":        {S: aws.String(studyTableRecord.Tags)},
-			"content":     {S: aws.String(studyTableRecord.Content)},
-			"createdDate": {S: aws.String(studyTableRecord.CreatedDate)},
-			"updatedDate": {S: aws.String(studyTableRecord.UpdatedDate)},
-		},
-	}
-
-	_, err = r.db.PutItem(input)
+	studyTableRecord := toStudyTableRecord(study)
+	err := r.db.Create(studyTableRecord).Error
 	if err != nil {
 		return customerrors.NewInternalServerError(
-			fmt.Sprintf("スタディの作成に失敗しました。 id: %s", study.ID),
+			fmt.Sprintf("学習の作成に失敗しました。 id: %s", study.ID),
 			err,
 		)
 	}
+
 	return nil
 }
 
 // UpdateStudy はスタディを更新
 func (r *StudyRepositoryImpl) UpdateStudy(study *model_study.StudyEntity) error {
-	studyTableRecord, err := toStudyTableRecordFromEntity(study)
-	if err != nil {
-		return err
-	}
-	input := &dynamodb.UpdateItemInput{
-		TableName: aws.String(r.table),
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(studyTableRecord.ID)},
-		},
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":title":       {S: aws.String(studyTableRecord.Title)},
-			":tags":        {S: aws.String(studyTableRecord.Tags)},
-			":content":     {S: aws.String(studyTableRecord.Content)},
-			":updatedDate": {S: aws.String(studyTableRecord.UpdatedDate)},
-		},
-		UpdateExpression: aws.String("SET title = :title, tags = :tags, content = :content, updatedDate = :updatedDate"),
-	}
-
-	_, err = r.db.UpdateItem(input)
+	studyTableRecord := toStudyTableRecord(study)
+	err := r.db.Save(studyTableRecord).Error
 	if err != nil {
 		return customerrors.NewInternalServerError(
-			fmt.Sprintf("スタディの更新に失敗しました。 id: %s", study.ID),
+			fmt.Sprintf("学習の更新に失敗しました。 id: %s", study.ID),
 			err,
 		)
 	}
@@ -149,17 +108,10 @@ func (r *StudyRepositoryImpl) UpdateStudy(study *model_study.StudyEntity) error 
 
 // DeleteStudy はスタディを削除
 func (r *StudyRepositoryImpl) DeleteStudy(id string) error {
-	input := &dynamodb.DeleteItemInput{
-		TableName: aws.String(r.table),
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
-		},
-	}
-
-	_, err := r.db.DeleteItem(input)
+	err := r.db.Delete(&table.Study{}, id).Error
 	if err != nil {
 		return customerrors.NewInternalServerError(
-			fmt.Sprintf("スタディの削除に失敗しました。 id: %s", id),
+			fmt.Sprintf("学習の削除に失敗しました。 id: %s", id),
 			err,
 		)
 	}
@@ -168,26 +120,19 @@ func (r *StudyRepositoryImpl) DeleteStudy(id string) error {
 
 // GetStudyByID はIDでスタディを取得
 func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity, error) {
-	input := &dynamodb.GetItemInput{
-		TableName: aws.String(r.table),
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(id)},
-		},
-	}
-
-	result, err := r.db.GetItem(input)
+	var studyTableRecord table.Study
+	err := r.db.First(&studyTableRecord, id).Error
 	if err != nil {
-		return nil, customerrors.NewInternalServerError(
-			fmt.Sprintf("スタディの取得に失敗しました。 id: %s", id),
-			err,
-		)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		} else {
+			return nil, customerrors.NewInternalServerError(
+				fmt.Sprintf("学習の取得に失敗しました。 id: %s", id),
+				err,
+			)
+		}
 	}
-
-	studyTableRecord, err := toStudyTableRecordFromDynamoDBItem(&result.Item)
-	if err != nil {
-		return nil, err
-	}
-	study, err := toStudyEntity(studyTableRecord)
+	study := toStudyEntity(&studyTableRecord)
 	if err != nil {
 		return nil, err
 	}
@@ -195,82 +140,34 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 }
 
 // GetStudiesByTitleOrTags はタイトルまたはタグでスタディを検索し、GSIを使用して全体を検索する
-func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tags string, limit int, exclusiveStartKey string) ([]*model_study.StudyEntity, string, error) {
-	var lastEvaluatedKeyMap map[string]*dynamodb.AttributeValue
+func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagId string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
+	var totalRecord int64
+	var studies []*table.Study
+	query := r.db.Table("studies")
 
-	if exclusiveStartKey != "" {
-		lastEvaluatedKeyMap = map[string]*dynamodb.AttributeValue{"ID": {S: aws.String(exclusiveStartKey)}}
+	if title != "" {
+		query = query.Where("title LIKE ?", "%"+title+"%")
 	}
 
-	var studies []*model_study.StudyEntity
-	var items []map[string]*dynamodb.AttributeValue
-	var lastEvaluatedKey map[string]*dynamodb.AttributeValue
-	var err error
-
-	if title != "" || tags != "" {
-		queryInput := &dynamodb.QueryInput{
-			TableName:         aws.String(r.table),
-			Limit:             aws.Int64(int64(limit)),
-			ExclusiveStartKey: lastEvaluatedKeyMap,
-		}
-
-		if title != "" {
-			queryInput.IndexName = aws.String("TitleIndex")
-			queryInput.KeyConditionExpression = aws.String("title = :title")
-			queryInput.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{":title": {S: aws.String(title)}}
-		} else if tags != "" {
-			queryInput.IndexName = aws.String("TagsIndex")
-			queryInput.KeyConditionExpression = aws.String("tags = :tags")
-			queryInput.ExpressionAttributeValues = map[string]*dynamodb.AttributeValue{":tags": {S: aws.String(tags)}}
-		}
-
-		var result *dynamodb.QueryOutput
-		result, err = r.db.Query(queryInput)
-		if err != nil {
-			return nil, "", customerrors.NewInternalServerError(
-				fmt.Sprintf("スタディの検索に失敗しました。 title: %s, tags: %s", title, tags),
-				err,
-			)
-		}
-
-		items = result.Items
-		lastEvaluatedKey = result.LastEvaluatedKey
-	} else {
-		scanInput := &dynamodb.ScanInput{
-			TableName:         aws.String(r.table),
-			Limit:             aws.Int64(int64(limit)),
-			ExclusiveStartKey: lastEvaluatedKeyMap,
-		}
-
-		var result *dynamodb.ScanOutput
-		result, err = r.db.Scan(scanInput)
-		if err != nil {
-			return nil, "", customerrors.NewInternalServerError(
-				fmt.Sprintf("スタディの検索に失敗しました。 title: %s, tags: %s", title, tags),
-				err,
-			)
-		}
-
-		items = result.Items
-		lastEvaluatedKey = result.LastEvaluatedKey
+	// study_tagsテーブルが中間テーブル
+	if tagId != "" {
+		query = query.Joins("JOIN study_tags ON studies.id = study_tags.studyId").Where("study_tags.tagId = ?", tagId)
 	}
 
-	for _, item := range items {
-		studyTableRecord, err := toStudyTableRecordFromDynamoDBItem(&item)
-		if err != nil {
-			return nil, "", err
-		}
-		study, err := toStudyEntity(studyTableRecord)
-		if err != nil {
-			return nil, "", err
-		}
-		studies = append(studies, study)
+	if err := query.Count(&totalRecord).Error; err != nil {
+		return nil, customerrors.NewInternalServerError(
+			fmt.Sprintf("学習の総レコード数の取得に失敗しました。"),
+			err,
+		)
 	}
 
-	var nextExclusiveStartKey string
-	if lastEvaluatedKey != nil {
-		nextExclusiveStartKey = *lastEvaluatedKey["ID"].S
+	query = query.Offset(pageable.Offset()).Limit(pageable.Limit)
+	if err := query.Find(&studies).Error; err != nil {
+		return nil, customerrors.NewInternalServerError(
+			fmt.Sprintf("学習の取得に失敗しました。"),
+			err,
+		)
 	}
 
-	return studies, nextExclusiveStartKey, nil
+	return toStudiesPage(studies, int(totalRecord), pageable), nil
 }

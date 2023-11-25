@@ -1,12 +1,12 @@
 package di
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"fmt"
 	"github.com/k1e1n04/studios-api/study"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"os"
 )
 
@@ -37,29 +37,24 @@ func RegisterDependencies(c *dig.Container, logger *zap.Logger) error {
 
 // registerDB は DB をコンテナに登録
 func registerDB(bc *dig.Container, logger *zap.Logger) error {
-	err := bc.Provide(func() (*dynamodb.DynamoDB, error) {
-		if os.Getenv("ENV") == "Local" {
-			// DynamoDB Localに接続するためのセッションを設定
-			sess, err := session.NewSession(&aws.Config{
-				Endpoint: aws.String("http://localhost:8000"),
-				Region:   aws.String("ap-northeast-1"),
-			})
-			if err != nil {
-				return nil, err
-			}
-			return dynamodb.New(sess), nil
-		} else {
-			// 通常のAWSセッションを使用してDynamoDBに接続
-			sess, err := session.NewSession()
-			if err != nil {
-				return nil, err
-			}
-			return dynamodb.New(sess), nil
+	// DB
+	err := bc.Provide(func() (*gorm.DB, error) {
+		// MySQLに接続
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			os.Getenv("DB_USER"),
+			os.Getenv("DB_PASSWORD"),
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_NAME"),
+		)
+		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		if err != nil {
+			return nil, err
 		}
+		return db, nil
 	})
 
 	if err != nil {
-		logger.Error("DynamoDBの登録に失敗しました", zap.Error(err))
+		logger.Error("DBのDI登録に失敗しました。", zap.Error(err))
 		return err
 	}
 	return nil

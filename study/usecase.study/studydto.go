@@ -9,7 +9,7 @@ type StudyDTO struct {
 	// Title は タイトル
 	Title string
 	// Tags は タグ
-	Tags string
+	Tags []*TagDTO
 	// Content は 内容
 	Content string
 	// CreatedDate は 作成日時

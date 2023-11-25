@@ -3,36 +3,40 @@
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=password
-DB_NAME=studios-api
+DB_NAME=studios
 DB_PORT=3306
 
 # Create docker-compose.yml
 echo "docker-composeファイルを作成します。"
 
+mkdir mysql
+cd mysql
 mkdir data
+cd ../..
 cat > docker-compose.yml <<- EOL
 version: '3'
-services:
-  dynamodb-local:
-    image: amazon/dynamodb-local
-    container_name: dynamodb-studios-local
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./local-data:/home/dynamodblocal/db
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/db"
-  dynamodb-admin:
-    image: aaronshaf/dynamodb-admin
-    container_name: dynamodb-studios-admin
-    environment:
-      - DYNAMO_ENDPOINT=http://dynamodb-local:8000
-    ports:
-      - "8001:8001"
-    links:
-      - dynamodb-local
-    depends_on:
-      - dynamodb-local
 
+services:
+  mysql:
+    container_name: studios_mysql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_PASSWORD
+      MYSQL_DATABASE: $DB_NAME
+    volumes:
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      - local-network
+
+volumes:
+  data:
+
+networks:
+  local-network:
+    driver: bridge
 EOL
 
 # Build Docker containers
