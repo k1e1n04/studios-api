@@ -50,11 +50,12 @@ cat > .env <<- EOL
 # 環境設定
 ENV=Local
 # Mysql設定
-DB_HOST=$DB_HOST
-DB_USER=$DB_USER
-DB_PASSWORD=$DB_PASSWORD
-DB_NAME=$DB_NAME
-DB_PORT=$DB_PORT
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=password
+DB_NAME=studios
+DB_PORT=3306
+MIGRATIONS_DIR=./migrations
 EOL
 
 echo "セットアップが完了しました"

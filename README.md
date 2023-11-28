@@ -88,7 +88,7 @@ docker-compose up -d
 
 #### ローカルでの実行
 ```bash
-go run main.go
+go run localserver/local.go
 ```
 
 ローカルサーバーは `http://localhost:8080` でアクセスできます。

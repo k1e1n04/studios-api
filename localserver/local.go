@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"github.com/joho/godotenv"
 	"github.com/k1e1n04/gosmm/v2/pkg/gosmm"
 	"github.com/k1e1n04/studios-api/base/adapter/api/errorhandler"
@@ -10,27 +9,14 @@ import (
 	"github.com/k1e1n04/studios-api/base/adapter/routes"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/customlogger"
 	"github.com/k1e1n04/studios-api/di"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
-	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
-
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
-
-var echoLambda *echoadapter.EchoLambda
-
-// init Lambdaの初期化
-func init() {
-	e := initCommon()
-	echoLambda = echoadapter.New(e)
-}
 
 // initLocalApp ローカル環境用の初期化
 func initLocalApp() *echo.Echo {
@@ -44,20 +30,9 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Printf(".env ファイルが存在しませんでした。")
 	}
-	env := os.Getenv("ENV")
 	migrate()
-	log.Println("環境変数: ", env)
-	if env == "Local" {
-		e := initLocalApp()
-		e.Logger.Fatal(e.Start(":8080"))
-	} else {
-		lambda.Start(lambdaHandler)
-	}
-}
-
-// lambdaHandler Lambdaのハンドラー
-func lambdaHandler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return echoLambda.ProxyWithContext(ctx, req)
+	e := initLocalApp()
+	e.Logger.Fatal(e.Start(":8080"))
 }
 
 // initCommon Lambdaとローカル環境の共通の初期化処理
