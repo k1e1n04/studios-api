@@ -23,4 +23,5 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 	sg.GET("/list", sc.GetStudies)
 	sg.GET("/:id", sc.GetStudy)
 	sg.PUT("/update/:id", sc.UpdateStudy)
+	sg.DELETE("/delete/:id", sc.DeleteStudy)
 }
