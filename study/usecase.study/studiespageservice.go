@@ -40,7 +40,7 @@ func toStudiesPageDTO(studiesPage *model_study.StudiesPage) *StudiesPageDTO {
 // Get は 学習ページを取得
 func (sps *StudiesPageService) Get(param StudiesPageParam, pageable pagenation.Pageable) (*StudiesPageDTO, error) {
 	// 学習を取得
-	entity, err := sps.studyRepository.GetStudiesByTitleOrTags(param.Title, param.Tag, pageable)
+	entity, err := sps.studyRepository.GetStudiesByTitleOrTags(param.Title, param.TagName, pageable)
 	if err != nil {
 		return nil, err
 	}

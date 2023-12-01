@@ -8,6 +8,8 @@ type TagRepository interface {
 	GetTagsByIDs(tagIds []string) ([]*model_study.TagEntity, error)
 	// GetTagByID は タグIDからタグを取得
 	GetTagByID(tagId string) (*model_study.TagEntity, error)
-	// CreateTag は タグを作成
-	CreateTag(tag *model_study.TagEntity) error
+	// GetTagsByNames は タグ名からタグを取得
+	GetTagsByNames(names []string) ([]*model_study.TagEntity, error)
+	// CreateTags は タグを作成
+	CreateTags(tag []*model_study.TagEntity) error
 }

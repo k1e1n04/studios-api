@@ -140,18 +140,20 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 }
 
 // GetStudiesByTitleOrTags はタイトルまたはタグでスタディを検索し、GSIを使用して全体を検索する
-func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagId string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
+func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagName string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
 	var totalRecord int64
 	var studies []*table.Study
-	query := r.db.Table("studies")
+	query := r.db.Preload("Tags").Table("studies").Model(&table.Study{})
 
 	if title != "" {
 		query = query.Where("title LIKE ?", "%"+title+"%")
 	}
 
-	// study_tagsテーブルが中間テーブル
-	if tagId != "" {
-		query = query.Joins("JOIN study_tags ON studies.id = study_tags.studyId").Where("study_tags.tagId = ?", tagId)
+	// タグ名で検索
+	if tagName != "" {
+		query = query.Joins("JOIN study_tags ON study_tags.study_id = studies.id")
+		query = query.Joins("JOIN tags ON tags.id = study_tags.tag_id")
+		query = query.Where("tags.name LIKE ?", "%"+tagName+"%")
 	}
 
 	if err := query.Count(&totalRecord).Error; err != nil {

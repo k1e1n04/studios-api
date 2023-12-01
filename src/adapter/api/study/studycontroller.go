@@ -118,7 +118,11 @@ func (sc *StudyController) Register(c echo.Context) error {
 	// バリデーション
 	if err := c.Validate(&studyRegisterRequest); err != nil {
 		logger.Warn("リクエストが不正です", zap.Error(err))
-		return err
+		return customerrors.NewBadRequestError(
+			"リクエストが不正です",
+			base.BadRequestError,
+			err,
+		)
 	}
 	dto, err := sc.studyRegisterService.Execute(usecase_study.StudyRegisterParam{
 		Title:   studyRegisterRequest.Title,
@@ -137,7 +141,7 @@ func (sc *StudyController) GetStudies(c echo.Context) error {
 	logger := c.Get(config.LoggerKey).(*zap.Logger)
 	// パラメータを取得
 	title := c.QueryParam("title")
-	tag := c.QueryParam("tag")
+	tagName := c.QueryParam("tag")
 	page := c.QueryParam("page")
 	limit := c.QueryParam("limit")
 	pageInt, err := strconv.Atoi(page)
@@ -168,8 +172,8 @@ func (sc *StudyController) GetStudies(c echo.Context) error {
 	}
 	dto, err := sc.studiesPageService.Get(
 		usecase_study.StudiesPageParam{
-			Title: title,
-			Tag:   tag,
+			Title:   title,
+			TagName: tagName,
 		},
 		*pagenation.NewPageable(pageInt, limitInt),
 	)

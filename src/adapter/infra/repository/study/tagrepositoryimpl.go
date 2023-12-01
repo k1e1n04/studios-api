@@ -58,10 +58,26 @@ func (tri *TagRepositoryImpl) GetTagByID(tagId string) (*model_study.TagEntity, 
 	return toTagEntity(&tagTableRecord), nil
 }
 
-// CreateTag は タグを作成
-func (tri *TagRepositoryImpl) CreateTag(tag *model_study.TagEntity) error {
-	tagTableRecord := toTagTableRecord(tag)
-	if err := tri.DB.Create(&tagTableRecord).Error; err != nil {
+// GetTagsByNames は タグ名からタグを取得
+func (tri *TagRepositoryImpl) GetTagsByNames(names []string) ([]*model_study.TagEntity, error) {
+	var tags []*model_study.TagEntity
+	var tagTableRecords []*table.Tag
+	if err := tri.DB.Where("name IN ?", names).Find(&tagTableRecords).Error; err != nil {
+		return nil, err
+	}
+	for _, tagTableRecord := range tagTableRecords {
+		tags = append(tags, toTagEntity(tagTableRecord))
+	}
+	return tags, nil
+}
+
+// CreateTags は タグを作成
+func (tri *TagRepositoryImpl) CreateTags(tag []*model_study.TagEntity) error {
+	var tagTableRecords []*table.Tag
+	for _, tagEntity := range tag {
+		tagTableRecords = append(tagTableRecords, toTagTableRecord(tagEntity))
+	}
+	if err := tri.DB.Create(tagTableRecords).Error; err != nil {
 		return err
 	}
 	return nil

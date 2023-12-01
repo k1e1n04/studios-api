@@ -4,6 +4,6 @@ package usecase_study
 type StudiesPageParam struct {
 	// Title は タイトル
 	Title string
-	// Tag は タグID
-	Tag string
+	// TagName は タグ名
+	TagName string
 }

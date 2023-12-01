@@ -15,5 +15,5 @@ type StudyRepository interface {
 	// GetStudyByID は 学習を取得
 	GetStudyByID(id string) (*model_study.StudyEntity, error)
 	// GetStudiesByTitleOrTags は タイトルまたはタグから学習を取得
-	GetStudiesByTitleOrTags(title string, tagId string, pageable pagenation.Pageable) (*model_study.StudiesPage, error)
+	GetStudiesByTitleOrTags(title string, tagName string, pageable pagenation.Pageable) (*model_study.StudiesPage, error)
 }
