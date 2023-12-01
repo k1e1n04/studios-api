@@ -96,10 +96,17 @@ func (r *StudyRepositoryImpl) CreateStudy(study *model_study.StudyEntity) error 
 // UpdateStudy はスタディを更新
 func (r *StudyRepositoryImpl) UpdateStudy(study *model_study.StudyEntity) error {
 	studyTableRecord := toStudyTableRecord(study)
-	err := r.db.Save(studyTableRecord).Error
+	err := r.db.Model(&studyTableRecord).Save(studyTableRecord).Error
 	if err != nil {
 		return customerrors.NewInternalServerError(
 			fmt.Sprintf("学習の更新に失敗しました。 id: %s", study.ID),
+			err,
+		)
+	}
+	err = r.db.Debug().Model(&studyTableRecord).Association("Tags").Replace(&studyTableRecord.Tags)
+	if err != nil {
+		return customerrors.NewInternalServerError(
+			fmt.Sprintf("学習のタグの更新に失敗しました。 id: %s", study.ID),
 			err,
 		)
 	}

@@ -56,24 +56,8 @@ func (srs *StudyRegisterService) Execute(param StudyRegisterParam) (*StudyDTO, e
 			return nil, err
 		}
 		// 存在しないタグは新しく作成
-		notExistTags := make([]string, 0)
-		for _, tag := range param.Tags {
-			isExist := false
-			for _, tagEntity := range tags {
-				if tag == tagEntity.Name {
-					isExist = true
-					break
-				}
-			}
-			if !isExist {
-				notExistTags = append(notExistTags, tag)
-			}
-		}
-		if len(notExistTags) != 0 {
-			var newTags []*model_study.TagEntity
-			for _, tag := range notExistTags {
-				newTags = append(newTags, model_study.NewTagEntity(tag))
-			}
+		newTags := model_study.GenerateNotExistingTags(tags, param.Tags)
+		if len(newTags) != 0 {
 			err = srs.tagRepository.CreateTags(newTags)
 			if err != nil {
 				return nil, err

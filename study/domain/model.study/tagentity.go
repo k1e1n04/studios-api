@@ -27,3 +27,21 @@ func NewTagEntity(name string) *TagEntity {
 		Name: strings.ToLower(name),
 	}
 }
+
+// GenerateNotExistingTags は 存在しないTagを生成
+func GenerateNotExistingTags(existingTags []*TagEntity, tagNames []string) []*TagEntity {
+	newTags := make([]*TagEntity, 0)
+	for _, tagName := range tagNames {
+		isExist := false
+		for _, tagEntity := range existingTags {
+			if tagName == tagEntity.Name {
+				isExist = true
+				break
+			}
+		}
+		if !isExist {
+			newTags = append(newTags, NewTagEntity(tagName))
+		}
+	}
+	return newTags
+}

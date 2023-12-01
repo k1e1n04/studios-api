@@ -18,6 +18,7 @@ type StudyController struct {
 	studyRegisterService usecase_study.StudyRegisterService
 	studiesPageService   usecase_study.StudiesPageService
 	studyDetailService   usecase_study.StudyDetailService
+	studyUpdateService   usecase_study.StudyUpdateService
 }
 
 // NewStudyController は StudyController を生成
@@ -25,11 +26,13 @@ func NewStudyController(
 	studyRegisterService usecase_study.StudyRegisterService,
 	studiesPageService usecase_study.StudiesPageService,
 	studyDetailService usecase_study.StudyDetailService,
+	studyUpdateService usecase_study.StudyUpdateService,
 ) StudyController {
 	return StudyController{
 		studyRegisterService: studyRegisterService,
 		studiesPageService:   studiesPageService,
 		studyDetailService:   studyDetailService,
+		studyUpdateService:   studyUpdateService,
 	}
 }
 
@@ -195,4 +198,40 @@ func (sc *StudyController) GetStudy(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, toStudyResponse(studyDTO))
+}
+
+// UpdateStudy は学習を更新
+func (sc *StudyController) UpdateStudy(c echo.Context) error {
+	// ロガーをコンテキストから取得
+	logger := c.Get(config.LoggerKey).(*zap.Logger)
+	// id をパラメータから取得
+	id := c.Param("id")
+	var studyUpdateRequest StudyUpdateRequest
+	if err := c.Bind(&studyUpdateRequest); err != nil {
+		logger.Warn("リクエストが不正です。", zap.Error(err))
+		return customerrors.NewBadRequestError(
+			"リクエストのバインドに失敗しました",
+			base.InvalidJSONError,
+			err,
+		)
+	}
+	// バリデーション
+	if err := c.Validate(&studyUpdateRequest); err != nil {
+		logger.Warn("リクエストが不正です", zap.Error(err))
+		return customerrors.NewBadRequestError(
+			"リクエストが不正です",
+			base.BadRequestError,
+			err,
+		)
+	}
+	dto, err := sc.studyUpdateService.Execute(usecase_study.StudyUpdateParam{
+		ID:      id,
+		Title:   studyUpdateRequest.Title,
+		Content: studyUpdateRequest.Content,
+		Tags:    studyUpdateRequest.Tags,
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, toStudyResponse(dto))
 }

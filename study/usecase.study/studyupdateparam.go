@@ -1,7 +1,9 @@
 package usecase_study
 
-// StudyRegisterParam は 学習登録パラメータ
-type StudyRegisterParam struct {
+// StudyUpdateParam は学習更新パラメーター
+type StudyUpdateParam struct {
+	// ID は ID
+	ID string
 	// Title は タイトル
 	Title string
 	// Content は 内容

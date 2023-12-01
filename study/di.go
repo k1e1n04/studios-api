@@ -58,6 +58,16 @@ func RegisterUseCaseToContainer(bc *dig.Container, logger *zap.Logger) error {
 		logger.Error("学習詳細サービスの登録に失敗しました。", zap.Error(err))
 	}
 
+	err = bc.Provide(func(
+		studyRepository repository_study.StudyRepository,
+		tagRepository repository_study.TagRepository,
+	) usecase_study.StudyUpdateService {
+		return usecase_study.NewStudyUpdateService(studyRepository, tagRepository)
+	})
+	if err != nil {
+		logger.Error("学習更新サービスの登録に失敗しました。", zap.Error(err))
+	}
+
 	return nil
 }
 
@@ -67,11 +77,13 @@ func RegisterControllerToContainer(bc *dig.Container, logger *zap.Logger) error 
 		studyRegisterService usecase_study.StudyRegisterService,
 		studiesPageService usecase_study.StudiesPageService,
 		studyDetailService usecase_study.StudyDetailService,
+		studyUpdateService usecase_study.StudyUpdateService,
 	) study2.StudyController {
 		return study2.NewStudyController(
 			studyRegisterService,
 			studiesPageService,
 			studyDetailService,
+			studyUpdateService,
 		)
 	})
 	if err != nil {
