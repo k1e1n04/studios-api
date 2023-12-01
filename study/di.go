@@ -78,6 +78,13 @@ func RegisterUseCaseToContainer(bc *dig.Container, logger *zap.Logger) error {
 		logger.Error("学習削除サービスの登録に失敗しました。", zap.Error(err))
 	}
 
+	err = bc.Provide(func(tagRepository repository_study.TagRepository) usecase_study.TagsGetService {
+		return usecase_study.NewTagsGetService(tagRepository)
+	})
+	if err != nil {
+		logger.Error("タグ取得サービスの登録に失敗しました。", zap.Error(err))
+	}
+
 	return nil
 }
 
@@ -100,6 +107,14 @@ func RegisterControllerToContainer(bc *dig.Container, logger *zap.Logger) error 
 	})
 	if err != nil {
 		logger.Error("学習コントローラの登録に失敗しました", zap.Error(err))
+		return err
+	}
+
+	err = bc.Provide(func(tagsGetService usecase_study.TagsGetService) study2.TagController {
+		return study2.NewTagController(tagsGetService)
+	})
+	if err != nil {
+		logger.Error("タグコントローラの登録に失敗しました", zap.Error(err))
 		return err
 	}
 

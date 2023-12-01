@@ -24,4 +24,15 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 	sg.GET("/:id", sc.GetStudy)
 	sg.PUT("/update/:id", sc.UpdateStudy)
 	sg.DELETE("/delete/:id", sc.DeleteStudy)
+	
+	// タグコントローラ
+	var tc study.TagController
+	err = container.Invoke(func(c study.TagController) {
+		tc = c
+	})
+	if err != nil {
+		panic(err)
+	}
+	tg := api.Group("/tag")
+	tg.GET("/list", tc.GetTags)
 }

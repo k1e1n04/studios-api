@@ -14,4 +14,6 @@ type TagRepository interface {
 	CreateTags(tag []*model_study.TagEntity) error
 	// DeleteTags は タグを削除
 	DeleteTags(tag []*model_study.TagEntity) error
+	// SearchTags は タグを検索
+	SearchTags(name string) ([]*model_study.TagEntity, error)
 }

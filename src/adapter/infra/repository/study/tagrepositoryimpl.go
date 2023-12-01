@@ -125,3 +125,19 @@ func (tri *TagRepositoryImpl) DeleteTags(tag []*model_study.TagEntity) error {
 	}
 	return nil
 }
+
+// SearchTags は タグを検索
+func (tri *TagRepositoryImpl) SearchTags(name string) ([]*model_study.TagEntity, error) {
+	var tags []*model_study.TagEntity
+	var tagTableRecords []*table.Tag
+	if err := tri.DB.Where("name LIKE ?", "%"+name+"%").Find(&tagTableRecords).Error; err != nil {
+		return nil, customerrors.NewInternalServerError(
+			fmt.Sprintf("タグの検索に失敗しました。 name: %s", name),
+			err,
+		)
+	}
+	for _, tagTableRecord := range tagTableRecords {
+		tags = append(tags, toTagEntity(tagTableRecord))
+	}
+	return tags, nil
+}
