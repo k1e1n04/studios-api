@@ -38,3 +38,12 @@ func (s *StudyEntity) Update(title, content string, tags []*TagEntity) {
 	s.Tags = tags
 	s.UpdatedDate = time.Now()
 }
+
+// GetTagIDs は タグIDを取得
+func (s *StudyEntity) GetTagIDs() []string {
+	tagIDs := make([]string, len(s.Tags))
+	for i, tag := range s.Tags {
+		tagIDs[i] = tag.ID
+	}
+	return tagIDs
+}

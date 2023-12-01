@@ -11,7 +11,7 @@ type StudyRepository interface {
 	// UpdateStudy は 学習を更新
 	UpdateStudy(study *model_study.StudyEntity) error
 	// DeleteStudy は 学習を削除
-	DeleteStudy(id string) error
+	DeleteStudy(study *model_study.StudyEntity) error
 	// GetStudyByID は 学習を取得
 	GetStudyByID(id string) (*model_study.StudyEntity, error)
 	// GetStudiesByTitleOrTags は タイトルまたはタグから学習を取得

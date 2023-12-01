@@ -19,6 +19,7 @@ type StudyController struct {
 	studiesPageService   usecase_study.StudiesPageService
 	studyDetailService   usecase_study.StudyDetailService
 	studyUpdateService   usecase_study.StudyUpdateService
+	studyDeleteService   usecase_study.StudyDeleteService
 }
 
 // NewStudyController は StudyController を生成
@@ -27,12 +28,14 @@ func NewStudyController(
 	studiesPageService usecase_study.StudiesPageService,
 	studyDetailService usecase_study.StudyDetailService,
 	studyUpdateService usecase_study.StudyUpdateService,
+	studyDeleteService usecase_study.StudyDeleteService,
 ) StudyController {
 	return StudyController{
 		studyRegisterService: studyRegisterService,
 		studiesPageService:   studiesPageService,
 		studyDetailService:   studyDetailService,
 		studyUpdateService:   studyUpdateService,
+		studyDeleteService:   studyDeleteService,
 	}
 }
 
@@ -138,7 +141,7 @@ func (sc *StudyController) Register(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, toStudyRegisterResponse(dto))
+	return c.JSON(http.StatusCreated, toStudyRegisterResponse(dto))
 }
 
 // GetStudies は 学習一覧ページを取得
@@ -234,4 +237,15 @@ func (sc *StudyController) UpdateStudy(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, toStudyResponse(dto))
+}
+
+// DeleteStudy は学習を削除
+func (sc *StudyController) DeleteStudy(c echo.Context) error {
+	// id をパラメータから取得
+	id := c.Param("id")
+	err := sc.studyDeleteService.Execute(id)
+	if err != nil {
+		return err
+	}
+	return c.NoContent(http.StatusNoContent)
 }

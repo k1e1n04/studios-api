@@ -114,11 +114,20 @@ func (r *StudyRepositoryImpl) UpdateStudy(study *model_study.StudyEntity) error 
 }
 
 // DeleteStudy はスタディを削除
-func (r *StudyRepositoryImpl) DeleteStudy(id string) error {
-	err := r.db.Delete(&table.Study{}, id).Error
+func (r *StudyRepositoryImpl) DeleteStudy(study *model_study.StudyEntity) error {
+	studyTableRecord := toStudyTableRecord(study)
+	// アソシエーションを削除
+	err := r.db.Model(&studyTableRecord).Association("Tags").Clear()
 	if err != nil {
 		return customerrors.NewInternalServerError(
-			fmt.Sprintf("学習の削除に失敗しました。 id: %s", id),
+			fmt.Sprintf("学習のタグの削除に失敗しました。 id: %s", study.ID),
+			err,
+		)
+	}
+	err = r.db.Delete(&studyTableRecord).Error
+	if err != nil {
+		return customerrors.NewInternalServerError(
+			fmt.Sprintf("学習の削除に失敗しました。 id: %s", study.ID),
 			err,
 		)
 	}

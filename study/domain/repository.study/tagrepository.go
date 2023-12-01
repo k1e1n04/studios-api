@@ -12,4 +12,6 @@ type TagRepository interface {
 	GetTagsByNames(names []string) ([]*model_study.TagEntity, error)
 	// CreateTags は タグを作成
 	CreateTags(tag []*model_study.TagEntity) error
+	// DeleteTags は タグを削除
+	DeleteTags(tag []*model_study.TagEntity) error
 }

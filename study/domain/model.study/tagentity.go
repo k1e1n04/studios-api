@@ -13,6 +13,8 @@ type TagEntity struct {
 	ID string
 	// Name は 名前
 	Name string
+	// Studies は 学習
+	Studies []*StudyEntity
 }
 
 // NewTagEntity は タグエンティティを生成
