@@ -43,9 +43,12 @@ func (sds *StudyDeleteService) Execute(id string) error {
 	if err != nil {
 		return err
 	}
-	err = sds.tagRepository.DeleteTags(getNotRelatedTags(relatedTags, targetStudy))
-	if err != nil {
-		return err
+	notRelatedTags := getNotRelatedTags(relatedTags, targetStudy)
+	if len(notRelatedTags) != 0 {
+		err = sds.tagRepository.DeleteTags(notRelatedTags)
+		if err != nil {
+			return err
+		}
 	}
 	// 学習を削除
 	err = sds.studyRepository.DeleteStudy(targetStudy)
