@@ -121,7 +121,7 @@ func (r *StudyRepositoryImpl) DeleteStudy(id string) error {
 // GetStudyByID はIDでスタディを取得
 func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity, error) {
 	var studyTableRecord table.Study
-	err := r.db.First(&studyTableRecord, id).Error
+	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

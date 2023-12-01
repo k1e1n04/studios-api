@@ -17,16 +17,19 @@ import (
 type StudyController struct {
 	studyRegisterService usecase_study.StudyRegisterService
 	studiesPageService   usecase_study.StudiesPageService
+	studyDetailService   usecase_study.StudyDetailService
 }
 
 // NewStudyController は StudyController を生成
 func NewStudyController(
 	studyRegisterService usecase_study.StudyRegisterService,
 	studiesPageService usecase_study.StudiesPageService,
+	studyDetailService usecase_study.StudyDetailService,
 ) StudyController {
 	return StudyController{
 		studyRegisterService: studyRegisterService,
 		studiesPageService:   studiesPageService,
+		studyDetailService:   studyDetailService,
 	}
 }
 
@@ -181,4 +184,15 @@ func (sc *StudyController) GetStudies(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, toStudiesPageResponse(dto))
+}
+
+// GetStudy は学習の詳細を取得
+func (sc *StudyController) GetStudy(c echo.Context) error {
+	// id をパラメータから取得
+	id := c.Param("id")
+	studyDTO, err := sc.studyDetailService.Get(id)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, toStudyResponse(studyDTO))
 }

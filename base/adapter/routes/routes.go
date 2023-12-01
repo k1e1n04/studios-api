@@ -21,4 +21,5 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 	sg := api.Group("/study")
 	sg.POST("/register", sc.Register)
 	sg.GET("/list", sc.GetStudies)
+	sg.GET("/:id", sc.GetStudy)
 }

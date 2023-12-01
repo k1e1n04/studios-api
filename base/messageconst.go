@@ -13,4 +13,6 @@ const (
 	AuthenticationHeaderRequired = "Authorizationヘッダーは必須です。"
 	InvalidAuthenticationHeader  = "Authorizationヘッダーの形式が正しくありません。"
 	InvalidJWTToken              = "トークンの形式が無効です。"
+	// 学習
+	StudyNotFound = "学習が存在しません。"
 )
