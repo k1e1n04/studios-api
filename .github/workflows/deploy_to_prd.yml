@@ -1,0 +1,42 @@
+name: ECR Push Workflow
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  AWS_REGION: 'ap-northeast-1'
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  IMAGE_NAME: 'studios-prd-image'
+  REPOSITORY_NAME: 'studios-prd-repository'
+
+jobs:
+  build-and-push:
+    name: Build and Push to Amazon ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: $AWS_REGION
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REPOSITORY_NAME.amazonaws.com
+
+      - name: Build, Tag, and Push image to Amazon ECR
+        run: |
+          docker build -t $IMAGE_NAME .
+          docker tag $IMAGE_NAME $AWS_ACCOUNT_ID.dkr.ecr.$REPOSITORY_NAME.amazonaws.com/$REPOSITORY_NAME:${{ github.ref }}
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$REPOSITORY_NAME.amazonaws.com/$REPOSITORY_NAME:${{ github.ref }}
+
+      - name: Verify Pushed Image
+        run: |
+          aws ecr describe-images --repository-name $REPOSITORY_NAME --image-ids imageTag=${{ github.ref }}
