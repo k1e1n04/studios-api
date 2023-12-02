@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/k1e1n04/gosmm/v2/pkg/gosmm"
 	"github.com/k1e1n04/studios-api/base/adapter/api/errorhandler"
 	"github.com/k1e1n04/studios-api/base/adapter/api/validator"
 	"github.com/k1e1n04/studios-api/base/adapter/middlewares"
@@ -92,8 +91,6 @@ func initCommon() *echo.Echo {
 	// 404ハンドラーの設定
 	e.RouteNotFound("/*", func(c echo.Context) error { return c.NoContent(http.StatusNotFound) })
 
-	migrate(*secret)
-
 	return e
 }
 
@@ -111,31 +108,6 @@ func setMiddleware(e *echo.Echo, logger *zap.Logger) {
 func setErrorHandler(e *echo.Echo) {
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		log.Printf("error: %v", err)
-	}
-}
-
-// migrate マイグレーションを実行
-func migrate(secret Secret) {
-	driver := "mysql"
-	config := gosmm.DBConfig{
-		Driver:   driver,
-		Host:     os.Getenv("DB_HOST"),
-		Port:     3306,
-		User:     secret.Username,
-		Password: secret.Password,
-		DBName:   os.Getenv("DB_NAME"),
-	}
-	db, err := gosmm.ConnectDB(config)
-	if err != nil {
-		log.Fatalf("Connection failed: %v", err)
-	}
-	err = gosmm.Migrate(db, os.Getenv("MIGRATIONS_DIR"), driver)
-	if err != nil {
-		log.Fatalf("Migration failed: %v", err)
-	}
-	err = gosmm.CloseDB(db)
-	if err != nil {
-		log.Fatalf("Connection failed: %v", err)
 	}
 }
 
