@@ -60,6 +60,11 @@ func initCommon() *echo.Echo {
 		panic(err)
 	}
 
+	// CORSの設定
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+	}))
+
 	// ルーティングの設定
 	routes.InitRoutes(e, container)
 

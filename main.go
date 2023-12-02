@@ -85,6 +85,11 @@ func initCommon() *echo.Echo {
 		panic(err)
 	}
 
+	// CORSの設定 TODO: 本番環境では許可するオリジンを絞る
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+	}))
+
 	// ルーティングの設定
 	routes.InitRoutes(e, container)
 
