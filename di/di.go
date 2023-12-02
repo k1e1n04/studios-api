@@ -11,8 +11,8 @@ import (
 )
 
 // RegisterDependencies は DI登録を行う
-func RegisterDependencies(c *dig.Container, logger *zap.Logger) error {
-	err := registerDB(c, logger)
+func RegisterDependencies(c *dig.Container, logger *zap.Logger, dbUser string, dbPassword string) error {
+	err := registerDB(c, logger, dbUser, dbPassword)
 	if err != nil {
 		return err
 	}
@@ -36,13 +36,13 @@ func RegisterDependencies(c *dig.Container, logger *zap.Logger) error {
 }
 
 // registerDB は DB をコンテナに登録
-func registerDB(bc *dig.Container, logger *zap.Logger) error {
+func registerDB(bc *dig.Container, logger *zap.Logger, dbUser string, dbPassword string) error {
 	// DB
 	err := bc.Provide(func() (*gorm.DB, error) {
 		// MySQLに接続
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-			os.Getenv("DB_USER"),
-			os.Getenv("DB_PASSWORD"),
+			dbUser,
+			dbPassword,
 			os.Getenv("DB_HOST"),
 			os.Getenv("DB_NAME"),
 		)

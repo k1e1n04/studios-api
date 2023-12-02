@@ -54,7 +54,7 @@ func initCommon() *echo.Echo {
 
 	// 依存関係の注入
 	container := dig.New()
-	err = di.RegisterDependencies(container, customLogger)
+	err = di.RegisterDependencies(container, customLogger, os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"))
 	if err != nil {
 		customLogger.Panic("依存関係の注入に失敗しました。", zap.Error(err))
 		panic(err)

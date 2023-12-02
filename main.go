@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/joho/godotenv"
+	"encoding/json"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/k1e1n04/gosmm/v2/pkg/gosmm"
 	"github.com/k1e1n04/studios-api/base/adapter/api/errorhandler"
 	"github.com/k1e1n04/studios-api/base/adapter/api/validator"
@@ -26,33 +29,21 @@ import (
 
 var echoLambda *echoadapter.EchoLambda
 
+// Secret は RDSのユーザー名とパスワードを格納する構造体
+type Secret struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // init Lambdaの初期化
 func init() {
 	e := initCommon()
 	echoLambda = echoadapter.New(e)
 }
 
-// initLocalApp ローカル環境用の初期化
-func initLocalApp() *echo.Echo {
-	e := initCommon()
-	return e
-}
-
 // main Lambdaのエントリーポイント
 func main() {
-	// .envファイルの読み込み
-	if err := godotenv.Load(); err != nil {
-		log.Printf(".env ファイルが存在しませんでした。")
-	}
-	env := os.Getenv("ENV")
-	migrate()
-	log.Println("環境変数: ", env)
-	if env == "Local" {
-		e := initLocalApp()
-		e.Logger.Fatal(e.Start(":8080"))
-	} else {
-		lambda.Start(lambdaHandler)
-	}
+	lambda.Start(lambdaHandler)
 }
 
 // lambdaHandler Lambdaのハンドラー
@@ -77,9 +68,14 @@ func initCommon() *echo.Echo {
 	// エラーハンドラーの設定
 	e.HTTPErrorHandler = errorhandler.HTTPErrorHandler
 
+	secret, err := getSecrets(os.Getenv("DB_SECRET_NAME"))
+	if err != nil {
+		log.Fatalf("Failed to get secret: %v", err)
+	}
+
 	// 依存関係の注入
 	container := dig.New()
-	err = di.RegisterDependencies(container, customLogger)
+	err = di.RegisterDependencies(container, customLogger, secret.Username, secret.Password)
 	if err != nil {
 		customLogger.Panic("依存関係の注入に失敗しました。", zap.Error(err))
 		panic(err)
@@ -95,6 +91,8 @@ func initCommon() *echo.Echo {
 
 	// 404ハンドラーの設定
 	e.RouteNotFound("/*", func(c echo.Context) error { return c.NoContent(http.StatusNotFound) })
+
+	migrate(*secret)
 
 	return e
 }
@@ -117,14 +115,14 @@ func setErrorHandler(e *echo.Echo) {
 }
 
 // migrate マイグレーションを実行
-func migrate() {
+func migrate(secret Secret) {
 	driver := "mysql"
 	config := gosmm.DBConfig{
 		Driver:   driver,
 		Host:     os.Getenv("DB_HOST"),
 		Port:     3306,
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
+		User:     secret.Username,
+		Password: secret.Password,
 		DBName:   os.Getenv("DB_NAME"),
 	}
 	db, err := gosmm.ConnectDB(config)
@@ -139,4 +137,35 @@ func migrate() {
 	if err != nil {
 		log.Fatalf("Connection failed: %v", err)
 	}
+}
+
+// getSecrets SecretsManagerからシークレットを取得
+func getSecrets(secretName string) (*Secret, error) {
+	// SecretsManager のセッションを作成
+	sess, err := session.NewSession()
+	if err != nil {
+		return nil, err
+	}
+
+	// SecretsManager のクライアントを作成
+	svc := secretsmanager.New(sess)
+
+	// シークレットを取得
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(secretName),
+	}
+
+	result, err := svc.GetSecretValue(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// SecretStringをパース
+	var secret Secret
+	err = json.Unmarshal([]byte(*result.SecretString), &secret)
+	if err != nil {
+		return nil, err
+	}
+
+	return &secret, nil
 }
