@@ -25,18 +25,19 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: $AWS_REGION
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         run: |
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REPOSITORY_NAME.amazonaws.com
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.REPOSITORY_NAME }}
 
       - name: Build, Tag, and Push image to Amazon ECR
         run: |
-          docker build -t $IMAGE_NAME .
-          docker tag $IMAGE_NAME $AWS_ACCOUNT_ID.dkr.ecr.$REPOSITORY_NAME.amazonaws.com/$REPOSITORY_NAME:${{ github.ref }}
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$REPOSITORY_NAME.amazonaws.com/$REPOSITORY_NAME:${{ github.ref }}
+          docker build -t ${{ env.IMAGE_NAME }} .
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.REPOSITORY_NAME }}:${{ github.ref }}
+          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.REPOSITORY_NAME }}:${{ github.ref }}
 
       - name: Verify Pushed Image
         run: |
-          aws ecr describe-images --repository-name $REPOSITORY_NAME --image-ids imageTag=${{ github.ref }}
+          aws ecr describe-images --repository-name ${{ env.REPOSITORY_NAME }} --image-ids imageTag=${{ github.ref }}
+    
