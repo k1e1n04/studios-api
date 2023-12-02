@@ -33,11 +33,12 @@ jobs:
 
       - name: Build, Tag, and Push image to Amazon ECR
         run: |
-          docker build -t ${{ env.IMAGE_NAME }} .
-          docker tag ${{ env.IMAGE_NAME }} ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.REPOSITORY_NAME }}:${{ github.ref }}
-          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.REPOSITORY_NAME }}:${{ github.ref }}
+          docker build -t $IMAGE_NAME .
+          IMAGE_TAG=${GITHUB_REF#refs/tags/}
+          docker tag $IMAGE_NAME $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
       - name: Verify Pushed Image
         run: |
-          aws ecr describe-images --repository-name ${{ env.REPOSITORY_NAME }} --image-ids imageTag=${{ github.ref }}
+          aws ecr describe-images --repository-name ${{ env.REPOSITORY_NAME }} --image-ids imageTag=${GITHUB_REF#refs/tags/}
     
