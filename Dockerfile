@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 
 # Go のコードをコンパイル
-RUN GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o main .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o main .
 
 # 実行ステージ
 FROM public.ecr.aws/lambda/provided:al2
