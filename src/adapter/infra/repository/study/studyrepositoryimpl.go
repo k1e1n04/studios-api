@@ -159,7 +159,7 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagName string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
 	var totalRecord int64
 	var studies []*table.Study
-	query := r.db.Preload("Tags").Table("studies").Model(&table.Study{})
+	query := r.db.Preload("Tags").Table("studies").Model(&table.Study{}).Order("id DESC")
 
 	if title != "" {
 		query = query.Where("title LIKE ?", "%"+title+"%")
