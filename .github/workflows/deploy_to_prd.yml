@@ -41,4 +41,8 @@ jobs:
       - name: Verify Pushed Image
         run: |
           aws ecr describe-images --repository-name ${{ env.REPOSITORY_NAME }} --image-ids imageTag=${GITHUB_REF#refs/tags/}
+
+      - name: Upload Migration Files To S3
+        run: |
+          aws s3 cp ./migrations s3://studios-prd-migrations --recursive
     
