@@ -44,5 +44,5 @@ jobs:
 
       - name: Upload Migration Files To S3
         run: |
-          aws s3 cp ./migrations s3://studios-prd-migrations --recursive
+          aws s3 cp ./migrations s3://studios-prd-migration --recursive
     
