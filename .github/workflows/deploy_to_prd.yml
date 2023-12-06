@@ -9,7 +9,7 @@ env:
   AWS_REGION: 'ap-northeast-1'
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   IMAGE_NAME: 'studios-prd-image'
-  REPOSITORY_NAME: 'studios-prd-repository'
+  REPOSITORY_NAME: 'studios-prd-api-repository'
 
 jobs:
   build-and-push:
