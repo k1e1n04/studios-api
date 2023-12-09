@@ -67,14 +67,15 @@ func initCommon() *echo.Echo {
 	// エラーハンドラーの設定
 	e.HTTPErrorHandler = errorhandler.HTTPErrorHandler
 
-	secret, err := getSecrets(os.Getenv("DB_SECRET_NAME"))
-	if err != nil {
-		log.Fatalf("Failed to get secret: %v", err)
-	}
+	// TODO: https://docs.aws.amazon.com/ja_jp/secretsmanager/latest/userguide/retrieving-secrets_lambda.html に移行する
+	//secret, err := getSecrets(os.Getenv("DB_SECRET_NAME"))
+	//if err != nil {
+	//	log.Fatalf("Failed to get secret: %v", err)
+	//}
 
 	// 依存関係の注入
 	container := dig.New()
-	err = di.RegisterDependencies(container, customLogger, secret.Username, secret.Password)
+	err = di.RegisterDependencies(container, customLogger, os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"))
 	if err != nil {
 		customLogger.Panic("依存関係の注入に失敗しました。", zap.Error(err))
 		panic(err)
