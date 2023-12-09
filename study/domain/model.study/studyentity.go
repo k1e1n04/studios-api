@@ -8,11 +8,19 @@ import (
 
 // StudyEntity は 学びエンティティ
 type StudyEntity struct {
-	ID          string
-	Title       string
-	Tags        []*TagEntity
-	Content     string
+	// ID は ID
+	ID string
+	// Title は タイトル
+	Title string
+	// Tags は タグ
+	Tags []*TagEntity
+	// Content は 内容
+	Content string
+	// NumberOfReview は 復習回数
+	NumberOfReview int
+	// CreatedDate は 作成日
 	CreatedDate time.Time
+	// UpdatedDate は 更新日
 	UpdatedDate time.Time
 }
 
@@ -22,12 +30,13 @@ func NewStudyEntity(title, content string, tags []*TagEntity) *StudyEntity {
 	entropy := rand.New(rand.NewSource(t.UnixNano()))
 	id := ulid.MustNew(ulid.Timestamp(t), entropy)
 	return &StudyEntity{
-		ID:          id.String(),
-		Title:       title,
-		Content:     content,
-		Tags:        tags,
-		CreatedDate: time.Now(),
-		UpdatedDate: time.Now(),
+		ID:             id.String(),
+		Title:          title,
+		Content:        content,
+		Tags:           tags,
+		NumberOfReview: 0,
+		CreatedDate:    time.Now(),
+		UpdatedDate:    time.Now(),
 	}
 }
 
@@ -46,4 +55,9 @@ func (s *StudyEntity) GetTagIDs() []string {
 		tagIDs[i] = tag.ID
 	}
 	return tagIDs
+}
+
+// IncrementNumberOfReview は 復習回数をインクリメント
+func (s *StudyEntity) IncrementNumberOfReview() {
+	s.NumberOfReview++
 }

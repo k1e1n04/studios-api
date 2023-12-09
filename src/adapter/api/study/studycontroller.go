@@ -15,11 +15,12 @@ import (
 
 // StudyController は Studyコントローラ
 type StudyController struct {
-	studyRegisterService usecase_study.StudyRegisterService
-	studiesPageService   usecase_study.StudiesPageService
-	studyDetailService   usecase_study.StudyDetailService
-	studyUpdateService   usecase_study.StudyUpdateService
-	studyDeleteService   usecase_study.StudyDeleteService
+	studyRegisterService       usecase_study.StudyRegisterService
+	studiesPageService         usecase_study.StudiesPageService
+	studyDetailService         usecase_study.StudyDetailService
+	studyUpdateService         usecase_study.StudyUpdateService
+	studyDeleteService         usecase_study.StudyDeleteService
+	studyReviewCompleteService usecase_study.StudyReviewCompleteService
 }
 
 // NewStudyController は StudyController を生成
@@ -29,13 +30,15 @@ func NewStudyController(
 	studyDetailService usecase_study.StudyDetailService,
 	studyUpdateService usecase_study.StudyUpdateService,
 	studyDeleteService usecase_study.StudyDeleteService,
+	studyReviewCompleteService usecase_study.StudyReviewCompleteService,
 ) StudyController {
 	return StudyController{
-		studyRegisterService: studyRegisterService,
-		studiesPageService:   studiesPageService,
-		studyDetailService:   studyDetailService,
-		studyUpdateService:   studyUpdateService,
-		studyDeleteService:   studyDeleteService,
+		studyRegisterService:       studyRegisterService,
+		studiesPageService:         studiesPageService,
+		studyDetailService:         studyDetailService,
+		studyUpdateService:         studyUpdateService,
+		studyDeleteService:         studyDeleteService,
+		studyReviewCompleteService: studyReviewCompleteService,
 	}
 }
 
@@ -248,4 +251,15 @@ func (sc *StudyController) DeleteStudy(c echo.Context) error {
 		return err
 	}
 	return c.NoContent(http.StatusNoContent)
+}
+
+// CompleteReview は学習の復習を完了
+func (sc *StudyController) CompleteReview(c echo.Context) error {
+	// id をパラメータから取得
+	id := c.Param("id")
+	err := sc.studyReviewCompleteService.Execute(id)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, nil)
 }
