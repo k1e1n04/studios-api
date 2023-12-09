@@ -26,6 +26,13 @@ func RegisterRepositoryToContainer(bc *dig.Container, logger *zap.Logger) error 
 		logger.Error("タグリポジトリの登録に失敗しました", zap.Error(err))
 		return err
 	}
+	err = bc.Provide(func(db *gorm.DB) usecase_study.StudiesReviewQueryService {
+		return study.NewStudiesReviewQueryService(db)
+	})
+	if err != nil {
+		logger.Error("学習復習クエリサービスの登録に失敗しました", zap.Error(err))
+		return err
+	}
 
 	return nil
 }
@@ -92,6 +99,13 @@ func RegisterUseCaseToContainer(bc *dig.Container, logger *zap.Logger) error {
 		logger.Error("学習復習完了サービスの登録に失敗しました。", zap.Error(err))
 	}
 
+	err = bc.Provide(func(studiesReviewQueryService usecase_study.StudiesReviewQueryService) usecase_study.StudiesReviewPageService {
+		return usecase_study.NewStudiesReviewPageService(studiesReviewQueryService)
+	})
+	if err != nil {
+		logger.Error("学習復習ページサービスの登録に失敗しました。", zap.Error(err))
+	}
+
 	return nil
 }
 
@@ -104,6 +118,7 @@ func RegisterControllerToContainer(bc *dig.Container, logger *zap.Logger) error 
 		studyUpdateService usecase_study.StudyUpdateService,
 		studyDeleteService usecase_study.StudyDeleteService,
 		studyReviewCompleteService usecase_study.StudyReviewCompleteService,
+		studyReviewPageService usecase_study.StudiesReviewPageService,
 	) study2.StudyController {
 		return study2.NewStudyController(
 			studyRegisterService,
@@ -112,6 +127,7 @@ func RegisterControllerToContainer(bc *dig.Container, logger *zap.Logger) error 
 			studyUpdateService,
 			studyDeleteService,
 			studyReviewCompleteService,
+			studyReviewPageService,
 		)
 	})
 	if err != nil {

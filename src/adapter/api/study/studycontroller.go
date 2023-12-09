@@ -21,6 +21,7 @@ type StudyController struct {
 	studyUpdateService         usecase_study.StudyUpdateService
 	studyDeleteService         usecase_study.StudyDeleteService
 	studyReviewCompleteService usecase_study.StudyReviewCompleteService
+	studiesReviewPageService   usecase_study.StudiesReviewPageService
 }
 
 // NewStudyController は StudyController を生成
@@ -31,6 +32,7 @@ func NewStudyController(
 	studyUpdateService usecase_study.StudyUpdateService,
 	studyDeleteService usecase_study.StudyDeleteService,
 	studyReviewCompleteService usecase_study.StudyReviewCompleteService,
+	studiesReviewPageService usecase_study.StudiesReviewPageService,
 ) StudyController {
 	return StudyController{
 		studyRegisterService:       studyRegisterService,
@@ -39,6 +41,7 @@ func NewStudyController(
 		studyUpdateService:         studyUpdateService,
 		studyDeleteService:         studyDeleteService,
 		studyReviewCompleteService: studyReviewCompleteService,
+		studiesReviewPageService:   studiesReviewPageService,
 	}
 }
 
@@ -264,4 +267,38 @@ func (sc *StudyController) CompleteReview(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, nil)
+}
+
+// GetStudiesReview は学習の復習一覧を取得
+func (sc *StudyController) GetStudiesReview(c echo.Context) error {
+	// ロガーをコンテキストから取得
+	logger := c.Get(config.LoggerKey).(*zap.Logger)
+	// パラメータを取得
+	page := c.QueryParam("page")
+	limit := c.QueryParam("limit")
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		logger.Warn("クエリパラメータが不正です。", zap.Error(err))
+		return customerrors.NewBadRequestError(
+			"クエリパラメータが不正です。",
+			base.InvalidPageNumber,
+			err,
+		)
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		logger.Warn("クエリパラメータが不正です。", zap.Error(err))
+		return customerrors.NewBadRequestError(
+			"クエリパラメータが不正です。",
+			base.InvalidLimit,
+			err,
+		)
+	}
+	dto, err := sc.studiesReviewPageService.Get(
+		*pagenation.NewPageable(pageInt, limitInt),
+	)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, toStudiesPageResponse(dto))
 }

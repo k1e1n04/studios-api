@@ -27,6 +27,7 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 	sg.PUT("/update/:id", sc.UpdateStudy)
 	sg.DELETE("/delete/:id", sc.DeleteStudy)
 	sg.POST("/review/complete/:id", sc.CompleteReview)
+	sg.GET("/review/list", sc.GetStudiesReview)
 
 	// タグコントローラ
 	var tc study.TagController

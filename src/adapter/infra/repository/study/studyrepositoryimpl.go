@@ -155,7 +155,7 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 	return study, nil
 }
 
-// GetStudiesByTitleOrTags はタイトルまたはタグでスタディを検索し、GSIを使用して全体を検索する
+// GetStudiesByTitleOrTags はタイトルまたはタグからスタディを取得
 func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagName string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
 	var totalRecord int64
 	var studies []*table.Study
