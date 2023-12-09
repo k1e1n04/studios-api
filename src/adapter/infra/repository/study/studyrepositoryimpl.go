@@ -48,12 +48,13 @@ func toStudyEntity(study *table.Study) *model_study.StudyEntity {
 		tagEntities[i] = tagEntity
 	}
 	return &model_study.StudyEntity{
-		ID:          study.ID,
-		Title:       study.Title,
-		Content:     study.Content,
-		Tags:        tagEntities,
-		CreatedDate: study.CreatedDate,
-		UpdatedDate: study.UpdatedDate,
+		ID:             study.ID,
+		Title:          study.Title,
+		Content:        study.Content,
+		NumberOfReview: study.NumberOfReview,
+		Tags:           tagEntities,
+		CreatedDate:    study.CreatedDate,
+		UpdatedDate:    study.UpdatedDate,
 	}
 }
 
@@ -104,7 +105,7 @@ func (r *StudyRepositoryImpl) UpdateStudy(study *model_study.StudyEntity) error 
 			err,
 		)
 	}
-	err = r.db.Debug().Model(&studyTableRecord).Association("Tags").Replace(&studyTableRecord.Tags)
+	err = r.db.Model(&studyTableRecord).Association("Tags").Replace(&studyTableRecord.Tags)
 	if err != nil {
 		return customerrors.NewInternalServerError(
 			fmt.Sprintf("学習のタグの更新に失敗しました。 id: %s", study.ID),
