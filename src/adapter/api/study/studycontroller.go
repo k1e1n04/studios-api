@@ -64,12 +64,13 @@ func toStudyRegisterResponse(dto *usecase_study.StudyDTO) *StudyRegisterResponse
 	}
 
 	return &StudyRegisterResponse{
-		ID:          dto.ID,
-		Title:       dto.Title,
-		Tags:        tags,
-		Content:     dto.Content,
-		CreatedDate: createdDateStr,
-		UpdatedDate: updatedDateStr,
+		ID:             dto.ID,
+		Title:          dto.Title,
+		Tags:           tags,
+		Content:        dto.Content,
+		NumberOfReview: dto.NumberOfReview,
+		CreatedDate:    createdDateStr,
+		UpdatedDate:    updatedDateStr,
 	}
 }
 
@@ -86,12 +87,13 @@ func toStudyResponse(dto *usecase_study.StudyDTO) *StudyResponse {
 		tags[i] = toTagResponse(tag)
 	}
 	return &StudyResponse{
-		ID:          dto.ID,
-		Title:       dto.Title,
-		Tags:        tags,
-		Content:     dto.Content,
-		CreatedDate: createdDateStr,
-		UpdatedDate: updatedDateStr,
+		ID:             dto.ID,
+		Title:          dto.Title,
+		Tags:           tags,
+		Content:        dto.Content,
+		NumberOfReview: dto.NumberOfReview,
+		CreatedDate:    createdDateStr,
+		UpdatedDate:    updatedDateStr,
 	}
 }
 

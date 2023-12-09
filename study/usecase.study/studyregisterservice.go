@@ -29,12 +29,13 @@ func toStudyDTO(studyEntity *model_study.StudyEntity) *StudyDTO {
 		tags[i] = toTagDTO(tag)
 	}
 	return &StudyDTO{
-		ID:          studyEntity.ID,
-		Title:       studyEntity.Title,
-		Tags:        tags,
-		Content:     studyEntity.Content,
-		CreatedDate: studyEntity.CreatedDate,
-		UpdatedDate: studyEntity.UpdatedDate,
+		ID:             studyEntity.ID,
+		Title:          studyEntity.Title,
+		Tags:           tags,
+		Content:        studyEntity.Content,
+		NumberOfReview: studyEntity.NumberOfReview,
+		CreatedDate:    studyEntity.CreatedDate,
+		UpdatedDate:    studyEntity.UpdatedDate,
 	}
 }
 

@@ -8,6 +8,8 @@ type StudyRegisterResponse struct {
 	Title string `json:"title"`
 	// Content は 内容
 	Content string `json:"content"`
+	// NumberOfReview は 復習回数
+	NumberOfReview int `json:"number_of_review"`
 	// Tags は タグ
 	Tags []*TagResponse `json:"tags"`
 	// CreatedDate は 作成日
