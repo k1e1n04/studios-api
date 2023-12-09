@@ -30,12 +30,13 @@ func toStudyTableRecord(study *model_study.StudyEntity) *table.Study {
 		tags[i] = toTagTableRecord(tag)
 	}
 	return &table.Study{
-		ID:          study.ID,
-		Title:       study.Title,
-		Content:     study.Content,
-		Tags:        tags,
-		CreatedDate: study.CreatedDate,
-		UpdatedDate: study.UpdatedDate,
+		ID:             study.ID,
+		Title:          study.Title,
+		Content:        study.Content,
+		NumberOfReview: study.NumberOfReview,
+		Tags:           tags,
+		CreatedDate:    study.CreatedDate,
+		UpdatedDate:    study.UpdatedDate,
 	}
 }
 
