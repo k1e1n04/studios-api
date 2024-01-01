@@ -12,6 +12,11 @@ const (
 	AuthenticationHeaderRequired = "Authorizationヘッダーは必須です。"
 	InvalidAuthenticationHeader  = "Authorizationヘッダーの形式が正しくありません。"
 	InvalidAPIKey                = "APIキーが無効です。"
+	InvalidEmailOrPassword       = "メールアドレスまたはパスワードが不正です。"
 	// 学習
 	StudyNotFound = "学習が存在しません。"
+	// ユーザー
+	UserNotFound      = "ユーザーが存在しません。"
+	UserAlreadyExists = "ユーザーが既に存在しています。"
+	InvalidPassword   = "パスワードが不正です。"
 )
