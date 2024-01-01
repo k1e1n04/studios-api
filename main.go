@@ -103,6 +103,8 @@ func setMiddleware(e *echo.Echo, logger *zap.Logger) {
 	e.Use(middlewares.RequestIDMiddleware)
 	// ロガーミドルウェア
 	e.Use(middlewares.LoggingMiddleware(logger))
+	// XSS対策ミドルウェア
+	e.Use(middleware.Secure())
 }
 
 // エラーハンドラーの設定
