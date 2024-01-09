@@ -54,4 +54,5 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 	au := api.Group("/auth")
 	au.Use(middlewares.APIKeyAuthenticationMiddleware())
 	au.POST("/signup", ac.SignUp)
+	au.POST("/login", ac.Login)
 }

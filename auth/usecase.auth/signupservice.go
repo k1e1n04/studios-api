@@ -43,14 +43,14 @@ func validateSignUpParam(param SignUpParam) error {
 			nil,
 		)
 	}
-	if len(param.Username) < 3 || len(param.Username) > 20 {
+	if len(param.Username) < base.UsernameMinLength || len(param.Username) > base.UsernameMaxLength {
 		return customerrors.NewBadRequestError(
 			"ユーザー名は3文字以上20文字以下で入力してください",
 			base.InvalidUsername,
 			nil,
 		)
 	}
-	if len(param.Password) < 8 {
+	if len(param.Password) < base.PasswordMinLength {
 		return customerrors.NewBadRequestError(
 			"パスワードは8文字以上で入力してください",
 			base.TooShortPassword,

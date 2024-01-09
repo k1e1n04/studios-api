@@ -33,13 +33,24 @@ func RegisterUseCaseToContainer(bc *dig.Container, logger *zap.Logger) error {
 		return err
 	}
 
+	err = bc.Provide(func(authRepository repository_auth.AuthRepository) usecase_auth.LoginService {
+		return usecase_auth.NewLoginService(authRepository)
+	})
+	if err != nil {
+		logger.Error("ログインユースケースの登録に失敗しました", zap.Error(err))
+		return err
+	}
+
 	return nil
 }
 
 // RegisterControllerToContainer は Controller をコンテナに登録
 func RegisterControllerToContainer(bc *dig.Container, logger *zap.Logger) error {
-	err := bc.Provide(func(signUpService usecase_auth.SignUpService) auth2.AuthController {
-		return auth2.NewAuthController(signUpService)
+	err := bc.Provide(func(
+		signUpService usecase_auth.SignUpService,
+		loginService usecase_auth.LoginService,
+	) auth2.AuthController {
+		return auth2.NewAuthController(signUpService, loginService)
 	})
 	if err != nil {
 		logger.Error("サインアップコントローラの登録に失敗しました", zap.Error(err))

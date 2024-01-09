@@ -82,7 +82,11 @@ func registerCognito(bc *dig.Container, logger *zap.Logger) error {
 
 	client := cognitoidentityprovider.NewFromConfig(cfg)
 
-	err = bc.Provide(cognito.NewCognito(client))
+	co := cognito.NewCognito(client)
+
+	err = bc.Provide(func() *cognito.Cognito {
+		return co
+	})
 	if err != nil {
 		logger.Panic("CognitoのDI登録に失敗しました。", zap.Error(err))
 		return err

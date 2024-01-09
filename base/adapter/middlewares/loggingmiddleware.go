@@ -14,11 +14,21 @@ func LoggingMiddleware(logger *zap.Logger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
-			// カスタムロガーでリクエストID出力するようにし、コンテキストに追加
+
+			// 元のロガーインスタンスを保存
+			originalLogger := logger
+
+			// リクエストIDがあればロガーを新たに生成
 			reqID, exists := c.Get(config.RequestIdKey).(string)
 			if exists {
 				logger = customlogger.WithRequestID(logger, reqID)
+				defer func() {
+					// リクエストが終了したら元のロガーに戻す
+					logger = originalLogger
+				}()
 			}
+
+			// 新しいロガーインスタンスをコンテキストにセット
 			c.Set(config.LoggerKey, logger)
 
 			// 次のミドルウェアやルートハンドラを実行

@@ -21,7 +21,7 @@ type AuthRepositoryImpl struct {
 
 // NewAuthRepository は 認証に関するリポジトリを生成
 func NewAuthRepository(cognito *cognito.Cognito) repository_auth.AuthRepository {
-	return AuthRepositoryImpl{
+	return &AuthRepositoryImpl{
 		cognito: cognito,
 	}
 }
