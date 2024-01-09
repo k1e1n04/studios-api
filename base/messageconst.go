@@ -19,6 +19,7 @@ const (
 	InvalidEmail                 = "メールアドレスの形式が不正です。"
 	InvalidUsername              = "ユーザー名は3文字以上20文字以下で入力してください。"
 	TooShortPassword             = "パスワードは8文字以上で入力してください。"
+	InvalidToken                 = "トークンが無効です。"
 	// 学習
 	StudyNotFound = "学習が存在しません。"
 	// ユーザー
