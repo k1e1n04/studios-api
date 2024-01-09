@@ -1,7 +1,12 @@
 package di
 
 import (
+	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
+	"github.com/k1e1n04/studios-api/auth"
+	"github.com/k1e1n04/studios-api/src/adapter/infra/cognito"
 	"github.com/k1e1n04/studios-api/study"
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -13,6 +18,11 @@ import (
 // RegisterDependencies は DI登録を行う
 func RegisterDependencies(c *dig.Container, logger *zap.Logger, dbUser string, dbPassword string) error {
 	err := registerDB(c, logger, dbUser, dbPassword)
+	if err != nil {
+		return err
+	}
+
+	err = registerCognito(c, logger)
 	if err != nil {
 		return err
 	}
@@ -54,15 +64,41 @@ func registerDB(bc *dig.Container, logger *zap.Logger, dbUser string, dbPassword
 	})
 
 	if err != nil {
-		logger.Error("DBのDI登録に失敗しました。", zap.Error(err))
+		logger.Panic("DBのDI登録に失敗しました。", zap.Error(err))
 		return err
 	}
+	return nil
+}
+
+// registerCognito は Cognito をコンテナに登録
+func registerCognito(bc *dig.Container, logger *zap.Logger) error {
+	// AWS SDKの設定
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(os.Getenv("AWS_REGION")),
+	)
+	if err != nil {
+		logger.Panic("unable to load SDK config, %v", zap.Error(err))
+	}
+
+	client := cognitoidentityprovider.NewFromConfig(cfg)
+
+	err = bc.Provide(cognito.NewCognito(client))
+	if err != nil {
+		logger.Panic("CognitoのDI登録に失敗しました。", zap.Error(err))
+		return err
+	}
+
 	return nil
 }
 
 // registerRepository は Repository をコンテナに登録
 func registerRepository(c *dig.Container, logger *zap.Logger) error {
 	err := study.RegisterRepositoryToContainer(c, logger)
+	if err != nil {
+		return err
+	}
+
+	err = auth.RegisterRepositoryToContainer(c, logger)
 	if err != nil {
 		return err
 	}
@@ -77,12 +113,22 @@ func registerUseCase(bc *dig.Container, logger *zap.Logger) error {
 		return err
 	}
 
+	err = auth.RegisterUseCaseToContainer(bc, logger)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // registerController は Controller をコンテナに登録
 func registerController(bc *dig.Container, logger *zap.Logger) error {
 	err := study.RegisterControllerToContainer(bc, logger)
+	if err != nil {
+		return err
+	}
+
+	err = auth.RegisterControllerToContainer(bc, logger)
 	if err != nil {
 		return err
 	}

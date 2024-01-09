@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
+	repository_auth "github.com/k1e1n04/studios-api/auth/domain/repository.auth"
 	"github.com/k1e1n04/studios-api/base"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
@@ -19,8 +20,8 @@ type AuthRepositoryImpl struct {
 }
 
 // NewAuthRepository は 認証に関するリポジトリを生成
-func NewAuthRepository(cognito *cognito.Cognito) *AuthRepositoryImpl {
-	return &AuthRepositoryImpl{
+func NewAuthRepository(cognito *cognito.Cognito) repository_auth.AuthRepository {
+	return AuthRepositoryImpl{
 		cognito: cognito,
 	}
 }

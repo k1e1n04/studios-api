@@ -2,11 +2,13 @@ package routes
 
 import (
 	"github.com/k1e1n04/studios-api/base/adapter/middlewares"
+	"github.com/k1e1n04/studios-api/src/adapter/api/auth"
 	"github.com/k1e1n04/studios-api/src/adapter/api/study"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/dig"
 )
 
+// InitRoutes は ルーティングを初期化
 func InitRoutes(e *echo.Echo, container *dig.Container) {
 	api := e.Group("/api/v1")
 
@@ -40,4 +42,16 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 	tg := api.Group("/tag")
 	tg.Use(middlewares.APIKeyAuthenticationMiddleware())
 	tg.GET("/list", tc.GetTags)
+
+	// 認証コントローラ
+	var ac auth.AuthController
+	err = container.Invoke(func(c auth.AuthController) {
+		ac = c
+	})
+	if err != nil {
+		panic(err)
+	}
+	au := api.Group("/auth")
+	au.Use(middlewares.APIKeyAuthenticationMiddleware())
+	au.POST("/signup", ac.SignUp)
 }

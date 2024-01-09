@@ -13,6 +13,12 @@ const (
 	InvalidAuthenticationHeader  = "Authorizationヘッダーの形式が正しくありません。"
 	InvalidAPIKey                = "APIキーが無効です。"
 	InvalidEmailOrPassword       = "メールアドレスまたはパスワードが不正です。"
+	PasswordNotMatch             = "パスワードが一致しません。"
+	AgreeToTerms                 = "利用規約に同意してください。"
+	EmailRequired                = "メールアドレスを入力してください。"
+	InvalidEmail                 = "メールアドレスの形式が不正です。"
+	InvalidUsername              = "ユーザー名は3文字以上20文字以下で入力してください。"
+	TooShortPassword             = "パスワードは8文字以上で入力してください。"
 	// 学習
 	StudyNotFound = "学習が存在しません。"
 	// ユーザー

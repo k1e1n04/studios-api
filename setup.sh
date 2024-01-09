@@ -56,6 +56,10 @@ DB_PASSWORD=password
 DB_NAME=studios
 DB_PORT=3306
 MIGRATIONS_DIR=./migrations
+# Cognito設定
+COGNITO_USER_POOL_ID=ap-northeast-1_XXXXXXXXX
+COGNITO_CLIENT_ID=XXXXXXXXXXXXXXXXXXXXXXXXXX
+AWS_REGION=ap-northeast-1
 EOL
 
 echo "セットアップが完了しました"
