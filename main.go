@@ -105,6 +105,10 @@ func setMiddleware(e *echo.Echo, logger *zap.Logger) {
 	e.Use(middlewares.LoggingMiddleware(logger))
 	// XSS対策ミドルウェア
 	e.Use(middleware.Secure())
+	// gzip圧縮ミドルウェア
+	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Level: 5,
+	}))
 }
 
 // エラーハンドラーの設定
