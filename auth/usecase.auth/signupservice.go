@@ -24,7 +24,7 @@ func (sus *SignUpService) Execute(param SignUpParam) error {
 	if err := validateSignUpParam(param); err != nil {
 		return err
 	}
-	return sus.authRepository.SignUp(param.Username, param.Email, param.Password, param.AgreeToTerms)
+	return sus.authRepository.SignUp(param.Username, param.Email, param.Password)
 }
 
 // validateSignUpParam は サインアップパラメータのバリデーションを実行
