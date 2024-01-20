@@ -7,5 +7,5 @@ type AuthRepository interface {
 	// Login はログインを実行
 	Login(email, password string) (*auth.AuthToken, error)
 	// SignUp はサインアップを実行
-	SignUp(username, email, password string, agreeToTerms bool) error
+	SignUp(username, email, password string) error
 }

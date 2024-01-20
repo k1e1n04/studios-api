@@ -11,7 +11,6 @@ import (
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	"github.com/k1e1n04/studios-api/src/adapter/infra/cognito"
-	"strconv"
 )
 
 // AuthRepositoryImpl は 認証に関するリポジトリの実体
@@ -39,7 +38,14 @@ func (ar *AuthRepositoryImpl) Login(email, password string) (*auth.AuthToken, er
 	})
 	if err != nil {
 		var notAuthErr *types.NotAuthorizedException
+		var userNotFoundErr *types.UserNotFoundException
 		if errors.As(err, &notAuthErr) {
+			return nil, customerrors.NewBadRequestError(
+				"メールアドレスまたはパスワードが間違っています",
+				base.InvalidEmailOrPassword,
+				err,
+			)
+		} else if errors.As(err, &userNotFoundErr) {
 			return nil, customerrors.NewBadRequestError(
 				"メールアドレスまたはパスワードが間違っています",
 				base.InvalidEmailOrPassword,
@@ -51,30 +57,29 @@ func (ar *AuthRepositoryImpl) Login(email, password string) (*auth.AuthToken, er
 			err,
 		)
 	}
+	if authResponse.AuthenticationResult == nil {
+		return nil, customerrors.NewInternalServerError(
+			"認証結果が取得できませんでした",
+			err,
+		)
+	}
 	return &auth.AuthToken{AccessToken: aws.ToString(authResponse.AuthenticationResult.AccessToken), RefreshToken: aws.ToString(authResponse.AuthenticationResult.RefreshToken)}, nil
 }
 
 // SignUp は サインアップ処理を実行
-func (ar *AuthRepositoryImpl) SignUp(username, email, password string, agreeToTerms bool) error {
+func (ar *AuthRepositoryImpl) SignUp(username, email, password string) error {
 	// ユーザー登録処理
 	var signUpInput *cognito.SignUpInput
 	signUpInput = &cognito.SignUpInput{
-		ClientId: ar.cognito.ClientID,
-		Email:    email,
-		Username: username,
-		Password: password,
-		UserAttributes: []types.AttributeType{
-			{
-				Name:  aws.String("agreeToTerms"),
-				Value: aws.String(strconv.FormatBool(agreeToTerms)),
-			},
-		},
+		ClientId:          ar.cognito.ClientID,
+		Username:          email,
+		Password:          password,
+		PreferredUsername: username,
 	}
 	_, err := ar.cognito.Client.SignUp(context.TODO(), &cognitoidentityprovider.SignUpInput{
-		ClientId:       aws.String(signUpInput.ClientId),
-		Username:       aws.String(signUpInput.Username),
-		Password:       aws.String(signUpInput.Password),
-		UserAttributes: signUpInput.UserAttributes,
+		ClientId: aws.String(signUpInput.ClientId),
+		Username: aws.String(signUpInput.Username),
+		Password: aws.String(signUpInput.Password),
 	})
 	if err != nil {
 		var userExistsErr *types.UsernameExistsException

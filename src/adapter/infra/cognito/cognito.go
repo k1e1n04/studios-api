@@ -35,12 +35,12 @@ type Cognito struct {
 
 // SignUpInput は Cognito へのサインアップ時の型
 type SignUpInput struct {
-	ClientId       string
-	Email          string
-	Username       string
-	Password       string
-	AgreeToTerms   bool
-	UserAttributes []types.AttributeType
+	ClientId          string
+	Username          string // CognitoのUsernameとメールアドレスを対応させているので注意
+	PreferredUsername string
+	Password          string
+	AgreeToTerms      bool
+	UserAttributes    []types.AttributeType
 }
 
 // NewCognito は Cognito を生成する関数
