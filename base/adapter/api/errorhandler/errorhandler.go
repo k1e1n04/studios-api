@@ -15,6 +15,8 @@ import (
 func HTTPErrorHandler(err error, c echo.Context) {
 	code := http.StatusInternalServerError
 	msg := base.InternalServerError
+	// エラーログを出力
+	logger := c.Get(config.LoggerKey).(*zap.Logger)
 
 	var e interface{}
 
@@ -25,34 +27,39 @@ func HTTPErrorHandler(err error, c echo.Context) {
 	} else if errors.As(err, &e) {
 		switch e := e.(type) {
 		case *customerrors.BadRequestError:
+			logger.Warn(e.DebugMessage, zap.Error(e.Cause))
 			code = http.StatusBadRequest
 			msg = e.Error()
 		case *customerrors.NotFoundError:
+			logger.Warn(e.DebugMessage, zap.Error(e.Cause))
 			code = http.StatusNotFound
 			msg = e.Error()
 		case *customerrors.ConflictError:
+			logger.Warn(e.DebugMessage, zap.Error(e.Cause))
 			code = http.StatusConflict
 			msg = e.Error()
 		case *customerrors.UnauthorizedError:
+			logger.Warn(e.DebugMessage, zap.Error(e.Cause))
 			code = http.StatusUnauthorized
 			msg = e.Error()
 		case *customerrors.ForbiddenError:
+			logger.Warn(e.DebugMessage, zap.Error(e.Cause))
 			code = http.StatusForbidden
 			msg = e.Error()
 		case *customerrors.InternalServerError:
+			logger.Error(e.DebugMessage, zap.Error(e.Cause))
 			code = http.StatusInternalServerError
 			msg = e.Error()
 		}
 	} else {
 		switch err.(type) {
 		case validator.ValidationErrors:
+			logger.Warn("バリデーションエラー", zap.Error(err))
 			code = http.StatusBadRequest
 			msg = base.BadRequestError
 		}
 	}
 
-	// エラーログを出力
-	logger := c.Get(config.LoggerKey).(*zap.Logger)
 	if code >= http.StatusInternalServerError {
 		logger.Error(msg, zap.Int("status", code), zap.Error(err))
 	} else {
