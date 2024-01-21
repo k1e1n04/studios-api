@@ -60,7 +60,7 @@ func (tri *TagRepositoryImpl) GetTagsByIDsAndUserID(tagIds []*model_study.TagID,
 	for i, tagId := range tagIds {
 		tagIdStrings[i] = tagId.Value
 	}
-	if err := tri.DB.Preload("Studies").Where("id IN ?", tagIdStrings, "user_id = ?", userID.Value).Find(&tagTableRecords).Error; err != nil {
+	if err := tri.DB.Preload("Studies").Where("id IN ? AND user_id = ?", tagIdStrings, userID.Value).Find(&tagTableRecords).Error; err != nil {
 		return nil, customerrors.NewInternalServerError(
 			fmt.Sprintf("タグの取得に失敗しました。 tagIds: %v", tagIdStrings),
 			err,
@@ -91,7 +91,7 @@ func (tri *TagRepositoryImpl) GetTagByIDAndUserID(tagId *model_study.TagID, user
 func (tri *TagRepositoryImpl) GetTagsByNamesAndUserID(names []string, userID auth.UserID) ([]*model_study.TagEntity, error) {
 	var tags []*model_study.TagEntity
 	var tagTableRecords []*table.Tag
-	if err := tri.DB.Where("name IN ?", names, "user_id = ?", userID.Value).Find(&tagTableRecords).Error; err != nil {
+	if err := tri.DB.Where("name IN ? AND user_id = ?", names, userID.Value).Find(&tagTableRecords).Error; err != nil {
 		return nil, customerrors.NewInternalServerError(
 			fmt.Sprintf("タグの取得に失敗しました。 names: %v", names),
 			err,
