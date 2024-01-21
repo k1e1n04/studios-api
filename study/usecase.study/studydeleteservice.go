@@ -28,7 +28,8 @@ func NewStudyDeleteService(
 
 // Execute は 学習を削除
 func (sds *StudyDeleteService) Execute(id string, userID string) error {
-	targetStudy, err := sds.studyRepository.GetStudyByIDAndUserID(id, *auth.RestoreUserID(userID))
+	userIDVO := *auth.RestoreUserID(userID)
+	targetStudy, err := sds.studyRepository.GetStudyByIDAndUserID(*model_study.RestoreStudyID(id), userIDVO)
 	if err != nil {
 		return err
 	}
@@ -40,7 +41,7 @@ func (sds *StudyDeleteService) Execute(id string, userID string) error {
 		)
 	}
 	// 削除対象の学習以外に紐づいていないタグを削除
-	relatedTags, err := sds.tagRepository.GetTagsByIDs(targetStudy.GetTagIDs())
+	relatedTags, err := sds.tagRepository.GetTagsByIDsAndUserID(targetStudy.GetTagIDs(), userIDVO)
 	if err != nil {
 		return err
 	}

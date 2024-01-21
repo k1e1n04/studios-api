@@ -28,7 +28,8 @@ func NewStudyUpdateService(
 
 // Execute は学習更新を実行
 func (sus *StudyUpdateService) Execute(param StudyUpdateParam) (*StudyDTO, error) {
-	targetStudy, err := sus.studyRepository.GetStudyByIDAndUserID(param.ID, *auth.RestoreUserID(param.UserID))
+	userID := *auth.RestoreUserID(param.UserID)
+	targetStudy, err := sus.studyRepository.GetStudyByIDAndUserID(*model_study.RestoreStudyID(param.ID), userID)
 	if err != nil {
 		return nil, err
 	}
@@ -41,13 +42,13 @@ func (sus *StudyUpdateService) Execute(param StudyUpdateParam) (*StudyDTO, error
 	}
 	var tags []*model_study.TagEntity
 	if len(param.Tags) != 0 {
-		tagEntities, err := sus.tagRepository.GetTagsByNames(param.Tags)
+		tagEntities, err := sus.tagRepository.GetTagsByNamesAndUserID(param.Tags, userID)
 		if err != nil {
 			return nil, err
 		}
 		tags = append(tags, tagEntities...)
 		// tagが存在しない場合は作成する
-		newTags := model_study.GenerateNotExistingTags(tagEntities, param.Tags)
+		newTags := model_study.GenerateNotExistingTags(tagEntities, param.Tags, &userID)
 		if len(newTags) != 0 {
 			err = sus.tagRepository.CreateTags(newTags)
 			if err != nil {

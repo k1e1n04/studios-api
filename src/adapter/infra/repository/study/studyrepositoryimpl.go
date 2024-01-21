@@ -140,9 +140,9 @@ func (r *StudyRepositoryImpl) DeleteStudy(study *model_study.StudyEntity) error 
 }
 
 // GetStudyByIDAndUserID はIDとユーザーIDからスタディを取得
-func (r *StudyRepositoryImpl) GetStudyByIDAndUserID(id string, userID auth.UserID) (*model_study.StudyEntity, error) {
+func (r *StudyRepositoryImpl) GetStudyByIDAndUserID(id model_study.StudyID, userID auth.UserID) (*model_study.StudyEntity, error) {
 	var studyTableRecord table.Study
-	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ? AND user_id = ?", id, userID.Value).Error
+	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ? AND user_id = ?", id.Value, userID.Value).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

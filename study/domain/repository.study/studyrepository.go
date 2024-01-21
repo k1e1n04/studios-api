@@ -14,7 +14,7 @@ type StudyRepository interface {
 	// DeleteStudy は 学習を削除
 	DeleteStudy(study *model_study.StudyEntity) error
 	// GetStudyByIDAndUserID は 学習IDとユーザーIDから学習を取得
-	GetStudyByIDAndUserID(id string, userID auth.UserID) (*model_study.StudyEntity, error)
+	GetStudyByIDAndUserID(id model_study.StudyID, userID auth.UserID) (*model_study.StudyEntity, error)
 	// GetStudiesByTitleOrTagsAndUserID は タイトルまたはタグとユーザーIDから学習を取得
 	GetStudiesByTitleOrTagsAndUserID(
 		title string, tagName string, userID auth.UserID, pageable pagenation.Pageable,

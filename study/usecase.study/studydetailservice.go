@@ -5,6 +5,7 @@ import (
 	"github.com/k1e1n04/studios-api/base"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
+	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repository_study "github.com/k1e1n04/studios-api/study/domain/repository.study"
 )
 
@@ -22,7 +23,7 @@ func NewStudyDetailService(studyRepository repository_study.StudyRepository) Stu
 
 // Get は学習の詳細を取得
 func (sds *StudyDetailService) Get(id string, userID string) (*StudyDTO, error) {
-	studyEntity, err := sds.studyRepository.GetStudyByIDAndUserID(id, *auth.RestoreUserID(userID))
+	studyEntity, err := sds.studyRepository.GetStudyByIDAndUserID(*model_study.RestoreStudyID(id), *auth.RestoreUserID(userID))
 	if err != nil {
 		return nil, err
 	}

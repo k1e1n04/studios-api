@@ -48,8 +48,8 @@ func (s *StudyEntity) Update(title, content string, tags []*TagEntity) {
 }
 
 // GetTagIDs は タグIDを取得
-func (s *StudyEntity) GetTagIDs() []string {
-	tagIDs := make([]string, len(s.Tags))
+func (s *StudyEntity) GetTagIDs() []*TagID {
+	tagIDs := make([]*TagID, len(s.Tags))
 	for i, tag := range s.Tags {
 		tagIDs[i] = tag.ID
 	}
