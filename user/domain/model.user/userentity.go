@@ -8,6 +8,4 @@ type UserEntity struct {
 	Email string
 	// Username は ユーザー名
 	Username string
-	// agreeToTerms は 利用規約に同意したかどうか
-	AgreeToTerms bool
 }

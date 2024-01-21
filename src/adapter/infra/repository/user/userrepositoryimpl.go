@@ -9,7 +9,6 @@ import (
 	"github.com/k1e1n04/studios-api/src/adapter/infra/cognito"
 	model_user "github.com/k1e1n04/studios-api/user/domain/model.user"
 	"os"
-	"strconv"
 )
 
 // UserRepositoryImpl は ユーザーリポジトリの実体
@@ -47,18 +46,10 @@ func (ur *UserRepositoryImpl) GetUserInfoByID(id string) (*model_user.UserEntity
 		switch aws.ToString(attr.Name) {
 		case "sub":
 			userEntity.ID = aws.ToString(attr.Value)
-		case "username":
+		case "preferred_username":
 			userEntity.Username = aws.ToString(attr.Value)
 		case "email":
 			userEntity.Email = aws.ToString(attr.Value)
-		case "agreeToTerms":
-			userEntity.AgreeToTerms, err = strconv.ParseBool(aws.ToString(attr.Value))
-			if err != nil {
-				return nil, customerrors.NewInternalServerError(
-					"ユーザー情報の取得に失敗しました",
-					err,
-				)
-			}
 		}
 	}
 	return userEntity, nil
