@@ -6,10 +6,12 @@ import (
 	"github.com/k1e1n04/studios-api/src/adapter/api/study"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/dig"
+	"os"
 )
 
 // InitRoutes は ルーティングを初期化
 func InitRoutes(e *echo.Echo, container *dig.Container) {
+	jwksURL := "https://cognito-idp." + os.Getenv("AWS_REGION") + ".amazonaws.com/" + os.Getenv("COGNITO_USER_POOL_ID") + "/.well-known/jwks.json"
 	api := e.Group("/api/v1")
 
 	// 学習コントローラ
@@ -22,7 +24,7 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 	}
 
 	sg := api.Group("/study")
-	sg.Use(middlewares.APIKeyAuthenticationMiddleware())
+	sg.Use(middlewares.CognitoJWTAuthMiddleware(jwksURL))
 	sg.POST("/register", sc.Register)
 	sg.GET("/list", sc.GetStudies)
 	sg.GET("/:id", sc.GetStudy)
@@ -40,7 +42,7 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 		panic(err)
 	}
 	tg := api.Group("/tag")
-	tg.Use(middlewares.APIKeyAuthenticationMiddleware())
+	tg.Use(middlewares.CognitoJWTAuthMiddleware(jwksURL))
 	tg.GET("/list", tc.GetTags)
 
 	// 認証コントローラ
@@ -52,7 +54,6 @@ func InitRoutes(e *echo.Echo, container *dig.Container) {
 		panic(err)
 	}
 	au := api.Group("/auth")
-	au.Use(middlewares.APIKeyAuthenticationMiddleware())
 	au.POST("/signup", ac.SignUp)
 	au.POST("/login", ac.Login)
 }

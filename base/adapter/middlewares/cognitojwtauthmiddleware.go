@@ -13,10 +13,6 @@ import (
 	"strings"
 )
 
-const (
-	AuthUserKey = "user"
-)
-
 // CognitoJWTAuthMiddleware は CognitoのJWT認証のミドルウェア
 func CognitoJWTAuthMiddleware(jwksURL string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -43,12 +39,16 @@ func CognitoJWTAuthMiddleware(jwksURL string) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, base.InvalidToken)
 			}
 
-			c.Set(AuthUserKey, token)
+			// User IDをContextにセット
+			claims := token.PrivateClaims()
+			userID := claims["sub"].(string)
+			c.Set(config.UserIDKey, userID)
 			return next(c)
 		}
 	}
 }
 
+// verifyCognitoToken は Cognitoのトークンを検証する関数
 func verifyCognitoToken(jwksURL string, accessToken string, logger *zap.Logger) (jwt.Token, error) {
 	// JWTの検証に使用するJWKセットを取得
 	jwkSet, err := jwk.Fetch(context.Background(), jwksURL)
