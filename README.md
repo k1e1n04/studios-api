@@ -86,6 +86,11 @@ chmod +x setup.sh
 docker-compose up -d
 ```
 
+#### マイグレーション
+```bash
+gosmm migrate
+```
+
 #### ローカルでの実行
 ```bash
 go run localserver/local.go
