@@ -1,21 +1,22 @@
 package model_study
 
 import (
-	"github.com/oklog/ulid"
-	"math/rand"
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"time"
 )
 
 // StudyEntity は 学びエンティティ
 type StudyEntity struct {
 	// ID は ID
-	ID string
+	ID *StudyID
 	// Title は タイトル
 	Title string
 	// Tags は タグ
 	Tags []*TagEntity
 	// Content は 内容
 	Content string
+	// UserID は ユーザーID
+	UserID *auth.UserID
 	// NumberOfReview は 復習回数
 	NumberOfReview int
 	// CreatedDate は 作成日
@@ -25,14 +26,12 @@ type StudyEntity struct {
 }
 
 // NewStudyEntity は StudyEntity を生成
-func NewStudyEntity(title, content string, tags []*TagEntity) *StudyEntity {
-	t := time.Now()
-	entropy := rand.New(rand.NewSource(t.UnixNano()))
-	id := ulid.MustNew(ulid.Timestamp(t), entropy)
+func NewStudyEntity(title, content string, userID *auth.UserID, tags []*TagEntity) *StudyEntity {
 	return &StudyEntity{
-		ID:             id.String(),
+		ID:             NewStudyID(),
 		Title:          title,
 		Content:        content,
+		UserID:         userID,
 		Tags:           tags,
 		NumberOfReview: 0,
 		CreatedDate:    time.Now(),
