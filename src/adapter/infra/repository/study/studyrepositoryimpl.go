@@ -3,6 +3,7 @@ package study
 import (
 	"errors"
 	"fmt"
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	pagenation2 "github.com/k1e1n04/studios-api/base/sharedkarnel/model/pagenation"
 	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
@@ -30,9 +31,10 @@ func toStudyTableRecord(study *model_study.StudyEntity) *table.Study {
 		tags[i] = toTagTableRecord(tag)
 	}
 	return &table.Study{
-		ID:             study.ID,
+		ID:             study.ID.Value,
 		Title:          study.Title,
 		Content:        study.Content,
+		UserID:         study.UserID.Value,
 		NumberOfReview: study.NumberOfReview,
 		Tags:           tags,
 		CreatedDate:    study.CreatedDate,
@@ -48,9 +50,10 @@ func toStudyEntity(study *table.Study) *model_study.StudyEntity {
 		tagEntities[i] = tagEntity
 	}
 	return &model_study.StudyEntity{
-		ID:             study.ID,
+		ID:             model_study.RestoreStudyID(study.ID),
 		Title:          study.Title,
 		Content:        study.Content,
+		UserID:         auth.RestoreUserID(study.UserID),
 		NumberOfReview: study.NumberOfReview,
 		Tags:           tagEntities,
 		CreatedDate:    study.CreatedDate,
@@ -136,10 +139,10 @@ func (r *StudyRepositoryImpl) DeleteStudy(study *model_study.StudyEntity) error 
 	return nil
 }
 
-// GetStudyByID はIDでスタディを取得
-func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity, error) {
+// GetStudyByIDAndUserID はIDとユーザーIDからスタディを取得
+func (r *StudyRepositoryImpl) GetStudyByIDAndUserID(id model_study.StudyID, userID auth.UserID) (*model_study.StudyEntity, error) {
 	var studyTableRecord table.Study
-	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ?", id).Error
+	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ? AND user_id = ?", id.Value, userID.Value).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -157,11 +160,17 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 	return study, nil
 }
 
-// GetStudiesByTitleOrTags はタイトルまたはタグからスタディを取得
-func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagName string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
+// GetStudiesByTitleOrTagsAndUserID はタイトルまたはタグとユーザーIDからスタディを取得
+func (r *StudyRepositoryImpl) GetStudiesByTitleOrTagsAndUserID(
+	title string, tagName string, userID auth.UserID, pageable pagenation.Pageable,
+) (*model_study.StudiesPage, error) {
 	var totalRecord int64
 	var studies []*table.Study
-	query := r.db.Preload("Tags").Table("studies").Model(&table.Study{}).Order("id DESC")
+	query := r.db.Preload("Tags").
+		Table("studies").
+		Model(&table.Study{}).
+		Where("user_id = ?", userID.Value).
+		Order("id DESC")
 
 	if title != "" {
 		query = query.Where("title LIKE ?", "%"+title+"%")

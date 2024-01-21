@@ -1,6 +1,7 @@
 package usecase_study
 
 import (
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repository_study "github.com/k1e1n04/studios-api/study/domain/repository.study"
@@ -40,7 +41,9 @@ func toStudiesPageDTO(studiesPage *model_study.StudiesPage) *StudiesPageDTO {
 // Get は 学習ページを取得
 func (sps *StudiesPageService) Get(param StudiesPageParam, pageable pagenation.Pageable) (*StudiesPageDTO, error) {
 	// 学習を取得
-	entity, err := sps.studyRepository.GetStudiesByTitleOrTags(param.Title, param.TagName, pageable)
+	entity, err := sps.studyRepository.GetStudiesByTitleOrTagsAndUserID(
+		param.Title, param.TagName, *auth.RestoreUserID(param.UserID), pageable,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package study
 import (
 	"errors"
 	"fmt"
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	"github.com/k1e1n04/studios-api/src/adapter/infra/table"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
@@ -30,8 +31,9 @@ func toTagTableRecord(tag *model_study.TagEntity) *table.Tag {
 		studyTableRecords[i] = toStudyTableRecord(study)
 	}
 	return &table.Tag{
-		ID:      tag.ID,
+		ID:      tag.ID.Value,
 		Name:    tag.Name,
+		UserID:  tag.UserID.Value,
 		Studies: studyTableRecords,
 	}
 }
@@ -43,19 +45,24 @@ func toTagEntity(tag *table.Tag) *model_study.TagEntity {
 		studyEntities[i] = toStudyEntity(study)
 	}
 	return &model_study.TagEntity{
-		ID:      tag.ID,
+		ID:      model_study.RestoreTagID(tag.ID),
+		UserID:  auth.RestoreUserID(tag.UserID),
 		Name:    tag.Name,
 		Studies: studyEntities,
 	}
 }
 
-// GetTagsByIDs は タグIDからタグを取得
-func (tri *TagRepositoryImpl) GetTagsByIDs(tagIds []string) ([]*model_study.TagEntity, error) {
+// GetTagsByIDsAndUserID は タグIDとユーザーIDからタグを取得
+func (tri *TagRepositoryImpl) GetTagsByIDsAndUserID(tagIds []*model_study.TagID, userID auth.UserID) ([]*model_study.TagEntity, error) {
 	var tags []*model_study.TagEntity
 	var tagTableRecords []*table.Tag
-	if err := tri.DB.Preload("Studies").Where("id IN ?", tagIds).Find(&tagTableRecords).Error; err != nil {
+	tagIdStrings := make([]string, len(tagIds))
+	for i, tagId := range tagIds {
+		tagIdStrings[i] = tagId.Value
+	}
+	if err := tri.DB.Preload("Studies").Where("id IN ?", tagIdStrings, "user_id = ?", userID.Value).Find(&tagTableRecords).Error; err != nil {
 		return nil, customerrors.NewInternalServerError(
-			fmt.Sprintf("タグの取得に失敗しました。 tagIds: %v", tagIds),
+			fmt.Sprintf("タグの取得に失敗しました。 tagIds: %v", tagIdStrings),
 			err,
 		)
 	}
@@ -65,10 +72,10 @@ func (tri *TagRepositoryImpl) GetTagsByIDs(tagIds []string) ([]*model_study.TagE
 	return tags, nil
 }
 
-// GetTagByID は タグIDからタグを取得
-func (tri *TagRepositoryImpl) GetTagByID(tagId string) (*model_study.TagEntity, error) {
+// GetTagByIDAndUserID は タグIDとユーザーIDからタグを取得
+func (tri *TagRepositoryImpl) GetTagByIDAndUserID(tagId *model_study.TagID, userID auth.UserID) (*model_study.TagEntity, error) {
 	var tagTableRecord table.Tag
-	if err := tri.DB.Where("id = ?", tagId).First(&tagTableRecord).Error; err != nil {
+	if err := tri.DB.Where("id = ?", tagId.Value, "user_id = ?", userID.Value).First(&tagTableRecord).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -80,11 +87,11 @@ func (tri *TagRepositoryImpl) GetTagByID(tagId string) (*model_study.TagEntity, 
 	return toTagEntity(&tagTableRecord), nil
 }
 
-// GetTagsByNames は タグ名からタグを取得
-func (tri *TagRepositoryImpl) GetTagsByNames(names []string) ([]*model_study.TagEntity, error) {
+// GetTagsByNamesAndUserID は タグ名とユーザーIDからタグを取得
+func (tri *TagRepositoryImpl) GetTagsByNamesAndUserID(names []string, userID auth.UserID) ([]*model_study.TagEntity, error) {
 	var tags []*model_study.TagEntity
 	var tagTableRecords []*table.Tag
-	if err := tri.DB.Where("name IN ?", names).Find(&tagTableRecords).Error; err != nil {
+	if err := tri.DB.Where("name IN ?", names, "user_id = ?", userID.Value).Find(&tagTableRecords).Error; err != nil {
 		return nil, customerrors.NewInternalServerError(
 			fmt.Sprintf("タグの取得に失敗しました。 names: %v", names),
 			err,
@@ -127,10 +134,10 @@ func (tri *TagRepositoryImpl) DeleteTags(tag []*model_study.TagEntity) error {
 }
 
 // SearchTags は タグを検索
-func (tri *TagRepositoryImpl) SearchTags(name string) ([]*model_study.TagEntity, error) {
+func (tri *TagRepositoryImpl) SearchTags(name string, userID auth.UserID) ([]*model_study.TagEntity, error) {
 	var tags []*model_study.TagEntity
 	var tagTableRecords []*table.Tag
-	if err := tri.DB.Where("name LIKE ?", "%"+name+"%").Find(&tagTableRecords).Error; err != nil {
+	if err := tri.DB.Where("name LIKE ?", "%"+name+"%", "user_id = ?", userID.Value).Find(&tagTableRecords).Error; err != nil {
 		return nil, customerrors.NewInternalServerError(
 			fmt.Sprintf("タグの検索に失敗しました。 name: %s", name),
 			err,

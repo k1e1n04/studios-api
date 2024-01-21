@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/k1e1n04/studios-api/base"
 	"github.com/k1e1n04/studios-api/base/config"
@@ -11,10 +12,6 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"strings"
-)
-
-const (
-	AuthUserKey = "user"
 )
 
 // CognitoJWTAuthMiddleware は CognitoのJWT認証のミドルウェア
@@ -43,12 +40,19 @@ func CognitoJWTAuthMiddleware(jwksURL string) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, base.InvalidToken)
 			}
 
-			c.Set(AuthUserKey, token)
+			// User IDをContextにセット
+			userID, err := getUserIDByToken(token, logger)
+			if err != nil {
+				logger.Warn(err.Error())
+				return echo.NewHTTPError(http.StatusUnauthorized, base.InvalidToken)
+			}
+			c.Set(config.UserIDKey, userID)
 			return next(c)
 		}
 	}
 }
 
+// verifyCognitoToken は Cognitoのトークンを検証する関数
 func verifyCognitoToken(jwksURL string, accessToken string, logger *zap.Logger) (jwt.Token, error) {
 	// JWTの検証に使用するJWKセットを取得
 	jwkSet, err := jwk.Fetch(context.Background(), jwksURL)
@@ -65,4 +69,30 @@ func verifyCognitoToken(jwksURL string, accessToken string, logger *zap.Logger) 
 	}
 
 	return token, nil
+}
+
+// トークンからユーザー情報を取得する
+func getUserIDByToken(token jwt.Token, logger *zap.Logger) (string, error) {
+	claims, err := token.AsMap(context.TODO())
+	if err != nil {
+		logger.Warn("トークンからクレームを取得できませんでした。", zap.Error(err))
+		return "", err
+	}
+
+	userIDValue, ok := claims["sub"]
+	if !ok || userIDValue == nil {
+		err = errors.New("クレーム 'sub' が見つからないか、nil です。")
+		logger.Warn(err.Error(), zap.Error(err))
+		return "", err
+	}
+
+	userID, ok := userIDValue.(string)
+	if !ok {
+		err = errors.New("'sub' クレームがstring型ではありません。")
+		logger.Warn(err.Error(), zap.Error(err))
+		return "", err
+	}
+	println(userID)
+
+	return userID, nil
 }
