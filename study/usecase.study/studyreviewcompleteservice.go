@@ -3,6 +3,7 @@ package usecase_study
 import (
 	"fmt"
 	"github.com/k1e1n04/studios-api/base"
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	repository_study "github.com/k1e1n04/studios-api/study/domain/repository.study"
 )
@@ -21,8 +22,8 @@ func NewStudyReviewCompleteService(studyRepository repository_study.StudyReposit
 }
 
 // Execute は 学習の復習を完了
-func (s *StudyReviewCompleteService) Execute(studyID string) error {
-	study, err := s.studyRepository.GetStudyByID(studyID)
+func (s *StudyReviewCompleteService) Execute(studyID string, userID string) error {
+	study, err := s.studyRepository.GetStudyByIDAndUserID(studyID, *auth.RestoreUserID(userID))
 	if err != nil {
 		return err
 	}

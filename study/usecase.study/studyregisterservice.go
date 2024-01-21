@@ -1,6 +1,7 @@
 package usecase_study
 
 import (
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repositoryStudy "github.com/k1e1n04/studios-api/study/domain/repository.study"
 )
@@ -29,7 +30,7 @@ func toStudyDTO(studyEntity *model_study.StudyEntity) *StudyDTO {
 		tags[i] = toTagDTO(tag)
 	}
 	return &StudyDTO{
-		ID:             studyEntity.ID,
+		ID:             studyEntity.ID.Value,
 		Title:          studyEntity.Title,
 		Tags:           tags,
 		Content:        studyEntity.Content,
@@ -66,7 +67,7 @@ func (srs *StudyRegisterService) Execute(param StudyRegisterParam) (*StudyDTO, e
 			tags = append(tags, newTags...)
 		}
 	}
-	studyEntity := model_study.NewStudyEntity(param.Title, param.Content, tags)
+	studyEntity := model_study.NewStudyEntity(param.Title, param.Content, auth.RestoreUserID(param.UserID), tags)
 	err = srs.studyRepository.CreateStudy(studyEntity)
 	if err != nil {
 		return nil, err

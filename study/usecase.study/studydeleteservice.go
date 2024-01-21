@@ -3,6 +3,7 @@ package usecase_study
 import (
 	"fmt"
 	"github.com/k1e1n04/studios-api/base"
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repository_study "github.com/k1e1n04/studios-api/study/domain/repository.study"
@@ -26,8 +27,8 @@ func NewStudyDeleteService(
 }
 
 // Execute は 学習を削除
-func (sds *StudyDeleteService) Execute(id string) error {
-	targetStudy, err := sds.studyRepository.GetStudyByID(id)
+func (sds *StudyDeleteService) Execute(id string, userID string) error {
+	targetStudy, err := sds.studyRepository.GetStudyByIDAndUserID(id, *auth.RestoreUserID(userID))
 	if err != nil {
 		return err
 	}

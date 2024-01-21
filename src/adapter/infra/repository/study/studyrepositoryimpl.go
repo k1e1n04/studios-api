@@ -139,10 +139,10 @@ func (r *StudyRepositoryImpl) DeleteStudy(study *model_study.StudyEntity) error 
 	return nil
 }
 
-// GetStudyByID はIDでスタディを取得
-func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity, error) {
+// GetStudyByIDAndUserID はIDとユーザーIDからスタディを取得
+func (r *StudyRepositoryImpl) GetStudyByIDAndUserID(id string, userID auth.UserID) (*model_study.StudyEntity, error) {
 	var studyTableRecord table.Study
-	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ?", id).Error
+	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ? AND user_id = ?", id, userID.Value).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -160,11 +160,17 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 	return study, nil
 }
 
-// GetStudiesByTitleOrTags はタイトルまたはタグからスタディを取得
-func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagName string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
+// GetStudiesByTitleOrTagsAndUserID はタイトルまたはタグとユーザーIDからスタディを取得
+func (r *StudyRepositoryImpl) GetStudiesByTitleOrTagsAndUserID(
+	title string, tagName string, userID auth.UserID, pageable pagenation.Pageable,
+) (*model_study.StudiesPage, error) {
 	var totalRecord int64
 	var studies []*table.Study
-	query := r.db.Preload("Tags").Table("studies").Model(&table.Study{}).Order("id DESC")
+	query := r.db.Preload("Tags").
+		Table("studies").
+		Model(&table.Study{}).
+		Where("user_id = ?", userID.Value).
+		Order("id DESC")
 
 	if title != "" {
 		query = query.Where("title LIKE ?", "%"+title+"%")

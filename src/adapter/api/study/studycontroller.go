@@ -123,6 +123,8 @@ func toStudiesPageResponse(dto *usecase_study.StudiesPageDTO) *StudiesPageRespon
 func (sc *StudyController) Register(c echo.Context) error {
 	// ロガーをコンテキストから取得
 	logger := c.Get(config.LoggerKey).(*zap.Logger)
+	// ユーザーIDをコンテキストから取得
+	userID := c.Get(config.UserIDKey).(string)
 	var studyRegisterRequest StudyRegisterRequest
 	if err := c.Bind(&studyRegisterRequest); err != nil {
 		logger.Warn("リクエストのバインドに失敗しました", zap.Error(err))
@@ -145,6 +147,7 @@ func (sc *StudyController) Register(c echo.Context) error {
 		Title:   studyRegisterRequest.Title,
 		Tags:    studyRegisterRequest.Tags,
 		Content: studyRegisterRequest.Content,
+		UserID:  userID,
 	})
 	if err != nil {
 		return err
@@ -156,6 +159,8 @@ func (sc *StudyController) Register(c echo.Context) error {
 func (sc *StudyController) GetStudies(c echo.Context) error {
 	// ロガーをコンテキストから取得
 	logger := c.Get(config.LoggerKey).(*zap.Logger)
+	// ユーザーIDをコンテキストから取得
+	userID := c.Get(config.UserIDKey).(string)
 	// パラメータを取得
 	title := c.QueryParam("title")
 	tagName := c.QueryParam("tag")
@@ -191,6 +196,7 @@ func (sc *StudyController) GetStudies(c echo.Context) error {
 		usecase_study.StudiesPageParam{
 			Title:   title,
 			TagName: tagName,
+			UserID:  userID,
 		},
 		*pagenation.NewPageable(pageInt, limitInt),
 	)
@@ -204,7 +210,9 @@ func (sc *StudyController) GetStudies(c echo.Context) error {
 func (sc *StudyController) GetStudy(c echo.Context) error {
 	// id をパラメータから取得
 	id := c.Param("id")
-	studyDTO, err := sc.studyDetailService.Get(id)
+	// ユーザーIDをコンテキストから取得
+	userID := c.Get(config.UserIDKey).(string)
+	studyDTO, err := sc.studyDetailService.Get(id, userID)
 	if err != nil {
 		return err
 	}
@@ -215,6 +223,8 @@ func (sc *StudyController) GetStudy(c echo.Context) error {
 func (sc *StudyController) UpdateStudy(c echo.Context) error {
 	// ロガーをコンテキストから取得
 	logger := c.Get(config.LoggerKey).(*zap.Logger)
+	// ユーザーIDをコンテキストから取得
+	userID := c.Get(config.UserIDKey).(string)
 	// id をパラメータから取得
 	id := c.Param("id")
 	var studyUpdateRequest StudyUpdateRequest
@@ -239,6 +249,7 @@ func (sc *StudyController) UpdateStudy(c echo.Context) error {
 		ID:      id,
 		Title:   studyUpdateRequest.Title,
 		Content: studyUpdateRequest.Content,
+		UserID:  userID,
 		Tags:    studyUpdateRequest.Tags,
 	})
 	if err != nil {
@@ -251,7 +262,9 @@ func (sc *StudyController) UpdateStudy(c echo.Context) error {
 func (sc *StudyController) DeleteStudy(c echo.Context) error {
 	// id をパラメータから取得
 	id := c.Param("id")
-	err := sc.studyDeleteService.Execute(id)
+	// ユーザーIDをコンテキストから取得
+	userID := c.Get(config.UserIDKey).(string)
+	err := sc.studyDeleteService.Execute(id, userID)
 	if err != nil {
 		return err
 	}
@@ -262,7 +275,9 @@ func (sc *StudyController) DeleteStudy(c echo.Context) error {
 func (sc *StudyController) CompleteReview(c echo.Context) error {
 	// id をパラメータから取得
 	id := c.Param("id")
-	err := sc.studyReviewCompleteService.Execute(id)
+	// ユーザーIDをコンテキストから取得
+	userID := c.Get(config.UserIDKey).(string)
+	err := sc.studyReviewCompleteService.Execute(id, userID)
 	if err != nil {
 		return err
 	}
@@ -273,6 +288,8 @@ func (sc *StudyController) CompleteReview(c echo.Context) error {
 func (sc *StudyController) GetStudiesReview(c echo.Context) error {
 	// ロガーをコンテキストから取得
 	logger := c.Get(config.LoggerKey).(*zap.Logger)
+	// ユーザーIDをコンテキストから取得
+	userID := c.Get(config.UserIDKey).(string)
 	// パラメータを取得
 	page := c.QueryParam("page")
 	limit := c.QueryParam("limit")
@@ -295,6 +312,7 @@ func (sc *StudyController) GetStudiesReview(c echo.Context) error {
 		)
 	}
 	dto, err := sc.studiesReviewPageService.Get(
+		userID,
 		*pagenation.NewPageable(pageInt, limitInt),
 	)
 	if err != nil {

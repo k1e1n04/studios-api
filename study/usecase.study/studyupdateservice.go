@@ -3,6 +3,7 @@ package usecase_study
 import (
 	"fmt"
 	"github.com/k1e1n04/studios-api/base"
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repository_study "github.com/k1e1n04/studios-api/study/domain/repository.study"
@@ -27,7 +28,7 @@ func NewStudyUpdateService(
 
 // Execute は学習更新を実行
 func (sus *StudyUpdateService) Execute(param StudyUpdateParam) (*StudyDTO, error) {
-	targetStudy, err := sus.studyRepository.GetStudyByID(param.ID)
+	targetStudy, err := sus.studyRepository.GetStudyByIDAndUserID(param.ID, *auth.RestoreUserID(param.UserID))
 	if err != nil {
 		return nil, err
 	}
