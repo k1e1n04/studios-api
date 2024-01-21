@@ -1,6 +1,7 @@
 package study
 
 import (
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
 	"github.com/k1e1n04/studios-api/src/adapter/infra/table"
@@ -22,7 +23,7 @@ func NewStudiesReviewQueryService(db *gorm.DB) usecase_study.StudiesReviewQueryS
 }
 
 // Get は 学習復習ページを取得
-func (srqs *StudiesReviewQueryServiceImpl) Get(pageable pagenation.Pageable) (*usecase_study.StudiesPageDTO, error) {
+func (srqs *StudiesReviewQueryServiceImpl) Get(userID auth.UserID, pageable pagenation.Pageable) (*usecase_study.StudiesPageDTO, error) {
 	var totalRecord int64
 	var studiesReviewSetting table.StudiesReviewSetting
 	if err := srqs.db.First(&studiesReviewSetting).Error; err != nil {

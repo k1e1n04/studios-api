@@ -1,6 +1,7 @@
 package usecase_study
 
 import (
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	model_study "github.com/k1e1n04/studios-api/study/domain/model.study"
 	repositoryStudy "github.com/k1e1n04/studios-api/study/domain/repository.study"
 )
@@ -29,7 +30,7 @@ func toStudyDTO(studyEntity *model_study.StudyEntity) *StudyDTO {
 		tags[i] = toTagDTO(tag)
 	}
 	return &StudyDTO{
-		ID:             studyEntity.ID,
+		ID:             studyEntity.ID.Value,
 		Title:          studyEntity.Title,
 		Tags:           tags,
 		Content:        studyEntity.Content,
@@ -42,7 +43,7 @@ func toStudyDTO(studyEntity *model_study.StudyEntity) *StudyDTO {
 // toTagDTO は TagEntity を TagDTO に変換
 func toTagDTO(tagEntity *model_study.TagEntity) *TagDTO {
 	return &TagDTO{
-		ID:   tagEntity.ID,
+		ID:   tagEntity.ID.Value,
 		Name: tagEntity.Name,
 	}
 }
@@ -50,14 +51,15 @@ func toTagDTO(tagEntity *model_study.TagEntity) *TagDTO {
 // Execute は 学習を作成
 func (srs *StudyRegisterService) Execute(param StudyRegisterParam) (*StudyDTO, error) {
 	var tags []*model_study.TagEntity
+	userID := *auth.RestoreUserID(param.UserID)
 	var err error
 	if len(param.Tags) != 0 {
-		tags, err = srs.tagRepository.GetTagsByNames(param.Tags)
+		tags, err = srs.tagRepository.GetTagsByNamesAndUserID(param.Tags, userID)
 		if err != nil {
 			return nil, err
 		}
 		// 存在しないタグは新しく作成
-		newTags := model_study.GenerateNotExistingTags(tags, param.Tags)
+		newTags := model_study.GenerateNotExistingTags(tags, param.Tags, &userID)
 		if len(newTags) != 0 {
 			err = srs.tagRepository.CreateTags(newTags)
 			if err != nil {
@@ -66,7 +68,7 @@ func (srs *StudyRegisterService) Execute(param StudyRegisterParam) (*StudyDTO, e
 			tags = append(tags, newTags...)
 		}
 	}
-	studyEntity := model_study.NewStudyEntity(param.Title, param.Content, tags)
+	studyEntity := model_study.NewStudyEntity(param.Title, param.Content, &userID, tags)
 	err = srs.studyRepository.CreateStudy(studyEntity)
 	if err != nil {
 		return nil, err

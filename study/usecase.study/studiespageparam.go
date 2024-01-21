@@ -6,4 +6,6 @@ type StudiesPageParam struct {
 	Title string
 	// TagName は タグ名
 	TagName string
+	// UserID は ユーザーID
+	UserID string
 }

@@ -4,4 +4,5 @@ package config
 const (
 	LoggerKey    = "logger"
 	RequestIdKey = "requestId"
+	UserIDKey    = "userId"
 )

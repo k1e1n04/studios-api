@@ -6,6 +6,8 @@ type StudyRegisterParam struct {
 	Title string
 	// Content は 内容
 	Content string
+	// UserID は ユーザーID
+	UserID string
 	// Tags は 複数のタグ名
 	Tags []string
 }
