@@ -52,7 +52,7 @@ func validateLoginParam(param LoginParam) error {
 	if len(param.Password) < base.PasswordMinLength {
 		return customerrors.NewBadRequestError(
 			"パスワードは8文字以上で入力してください",
-			base.TooShortPassword,
+			base.InvalidEmailOrPassword,
 			nil,
 		)
 	}
