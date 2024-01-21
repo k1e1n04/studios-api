@@ -10,6 +10,8 @@ type Study struct {
 	Title string `gorm:"not null;"`
 	// Content は 内容
 	Content string `gorm:"not null;"`
+	// UserID は ユーザーID
+	UserID string `gorm:"not null;"`
 	// Tags は タグ
 	Tags []*Tag `gorm:"many2many:study_tags;foreignKey:ID;references:ID"`
 	// NumberOfReview は 復習回数

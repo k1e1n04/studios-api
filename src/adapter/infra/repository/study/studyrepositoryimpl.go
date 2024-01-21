@@ -3,6 +3,7 @@ package study
 import (
 	"errors"
 	"fmt"
+	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/auth"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
 	pagenation2 "github.com/k1e1n04/studios-api/base/sharedkarnel/model/pagenation"
 	"github.com/k1e1n04/studios-api/base/usecase/pagenation"
@@ -30,9 +31,10 @@ func toStudyTableRecord(study *model_study.StudyEntity) *table.Study {
 		tags[i] = toTagTableRecord(tag)
 	}
 	return &table.Study{
-		ID:             study.ID,
+		ID:             study.ID.Value,
 		Title:          study.Title,
 		Content:        study.Content,
+		UserID:         study.UserID.Value,
 		NumberOfReview: study.NumberOfReview,
 		Tags:           tags,
 		CreatedDate:    study.CreatedDate,
@@ -48,9 +50,10 @@ func toStudyEntity(study *table.Study) *model_study.StudyEntity {
 		tagEntities[i] = tagEntity
 	}
 	return &model_study.StudyEntity{
-		ID:             study.ID,
+		ID:             model_study.RestoreStudyID(study.ID),
 		Title:          study.Title,
 		Content:        study.Content,
+		UserID:         auth.RestoreUserID(study.UserID),
 		NumberOfReview: study.NumberOfReview,
 		Tags:           tagEntities,
 		CreatedDate:    study.CreatedDate,
