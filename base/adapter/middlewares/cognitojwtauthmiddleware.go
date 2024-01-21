@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/k1e1n04/studios-api/base"
 	"github.com/k1e1n04/studios-api/base/config"
@@ -40,8 +41,11 @@ func CognitoJWTAuthMiddleware(jwksURL string) echo.MiddlewareFunc {
 			}
 
 			// User IDをContextにセット
-			claims := token.PrivateClaims()
-			userID := claims["sub"].(string)
+			userID, err := getUserIDByToken(token, logger)
+			if err != nil {
+				logger.Warn(err.Error())
+				return echo.NewHTTPError(http.StatusUnauthorized, base.InvalidToken)
+			}
 			c.Set(config.UserIDKey, userID)
 			return next(c)
 		}
@@ -65,4 +69,30 @@ func verifyCognitoToken(jwksURL string, accessToken string, logger *zap.Logger) 
 	}
 
 	return token, nil
+}
+
+// トークンからユーザー情報を取得する
+func getUserIDByToken(token jwt.Token, logger *zap.Logger) (string, error) {
+	claims, err := token.AsMap(context.TODO())
+	if err != nil {
+		logger.Warn("トークンからクレームを取得できませんでした。", zap.Error(err))
+		return "", err
+	}
+
+	userIDValue, ok := claims["sub"]
+	if !ok || userIDValue == nil {
+		err = errors.New("クレーム 'sub' が見つからないか、nil です。")
+		logger.Warn(err.Error(), zap.Error(err))
+		return "", err
+	}
+
+	userID, ok := userIDValue.(string)
+	if !ok {
+		err = errors.New("'sub' クレームがstring型ではありません。")
+		logger.Warn(err.Error(), zap.Error(err))
+		return "", err
+	}
+	println(userID)
+
+	return userID, nil
 }
