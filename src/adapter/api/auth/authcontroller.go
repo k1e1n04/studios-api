@@ -30,7 +30,7 @@ func NewAuthController(
 // SignUp は サインアップを実行
 func (ac *AuthController) SignUp(c echo.Context) error {
 	logger := c.Get(config.LoggerKey).(*zap.Logger)
-	req := SignUpRequest{}
+	req := SignupRequest{}
 	err := c.Bind(&req)
 	if err != nil {
 		logger.Warn("リクエストが不正です。", zap.Error(err))
@@ -59,7 +59,9 @@ func (ac *AuthController) SignUp(c echo.Context) error {
 		logger.Info("サインアップに失敗しました", zap.Error(err))
 		return err
 	}
-	return c.JSON(http.StatusOK, nil)
+	return c.JSON(http.StatusOK, SignupResponse{
+		Message: "サインアップに成功しました",
+	})
 }
 
 // Login は ログインを実行
@@ -93,5 +95,8 @@ func (ac *AuthController) Login(c echo.Context) error {
 		logger.Info("ログインに失敗しました", zap.Error(err))
 		return err
 	}
-	return c.JSON(http.StatusOK, dto)
+	return c.JSON(http.StatusOK, LoginResponse{
+		AccessToken:  dto.AccessToken,
+		RefreshToken: dto.RefreshToken,
+	})
 }

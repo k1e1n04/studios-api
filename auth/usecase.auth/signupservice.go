@@ -4,6 +4,7 @@ import (
 	repository_auth "github.com/k1e1n04/studios-api/auth/domain/repository.auth"
 	"github.com/k1e1n04/studios-api/base"
 	"github.com/k1e1n04/studios-api/base/sharedkarnel/model/customerrors"
+	"regexp"
 	"strings"
 )
 
@@ -46,7 +47,15 @@ func validateSignUpParam(param SignUpParam) error {
 	if len(param.Username) < base.UsernameMinLength || len(param.Username) > base.UsernameMaxLength {
 		return customerrors.NewBadRequestError(
 			"ユーザー名は3文字以上20文字以下で入力してください",
-			base.InvalidUsername,
+			base.InvalidUsernameLength,
+			nil,
+		)
+	}
+	isAlphanumeric := regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
+	if !isAlphanumeric(param.Username) {
+		return customerrors.NewBadRequestError(
+			"ユーザー名は半角英数字のみです",
+			base.UsernameMustBeAlphanumeric,
 			nil,
 		)
 	}
@@ -54,6 +63,38 @@ func validateSignUpParam(param SignUpParam) error {
 		return customerrors.NewBadRequestError(
 			"パスワードは8文字以上で入力してください",
 			base.TooShortPassword,
+			nil,
+		)
+	}
+	hasNumber := regexp.MustCompile(`\d`).MatchString
+	if !hasNumber(param.Password) {
+		return customerrors.NewBadRequestError(
+			"パスワードには少なくとも1つの数字を含む必要があります",
+			base.PasswordMustIncludeNumber,
+			nil,
+		)
+	}
+	hasSpecialCharacter := regexp.MustCompile(`[!@#$%^&*(),.?":{}|<>]`).MatchString
+	if !hasSpecialCharacter(param.Password) {
+		return customerrors.NewBadRequestError(
+			"パスワードには少なくとも1つの特殊文字を含む必要があります",
+			base.PasswordMustIncludeSpecial,
+			nil,
+		)
+	}
+	hasUpperCase := regexp.MustCompile(`[A-Z]`).MatchString
+	if !hasUpperCase(param.Password) {
+		return customerrors.NewBadRequestError(
+			"パスワードには少なくとも1つの大文字を含む必要があります",
+			base.PasswordMustIncludeUpper,
+			nil,
+		)
+	}
+	hasLowerCase := regexp.MustCompile(`[a-z]`).MatchString
+	if !hasLowerCase(param.Password) {
+		return customerrors.NewBadRequestError(
+			"パスワードには少なくとも1つの小文字を含む必要があります",
+			base.PasswordMustIncludeLower,
 			nil,
 		)
 	}
