@@ -130,7 +130,7 @@ func (tri *TagRepositoryImpl) DeleteTags(tag []*model_study.TagEntity) error {
 func (tri *TagRepositoryImpl) SearchTags(name string) ([]*model_study.TagEntity, error) {
 	var tags []*model_study.TagEntity
 	var tagTableRecords []*table.Tag
-	if err := tri.DB.Where("name LIKE ?", "%"+name+"%").Find(&tagTableRecords).Error; err != nil {
+	if err := tri.DB.Where("name LIKE ? AND user_id = ?", "%"+name+"%", userID.Value).Find(&tagTableRecords).Error; err != nil {
 		return nil, customerrors.NewInternalServerError(
 			fmt.Sprintf("タグの検索に失敗しました。 name: %s", name),
 			err,

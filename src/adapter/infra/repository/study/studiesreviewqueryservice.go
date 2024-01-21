@@ -33,7 +33,10 @@ func (srqs *StudiesReviewQueryServiceImpl) Get(pageable pagenation.Pageable) (*u
 	}
 	currentDate := time.Now().Format("2006-01-02")
 	var studies []*table.Study
-	query := srqs.db.Preload("Tags").Model(&table.Study{}).Order("number_of_review asc").
+	query := srqs.db.Preload("Tags").
+		Model(&table.Study{}).
+		Where("studies.user_id = ?", userID.Value).
+		Order("number_of_review asc").
 		Where("((DATE_ADD(updated_date, INTERVAL ? DAY) <= ?) and number_of_review = 0) or "+
 			"((DATE_ADD(updated_date, INTERVAL ? DAY) <= ?) and number_of_review = 1) or "+
 			"((DATE_ADD(updated_date, INTERVAL ? DAY) <= ?) and number_of_review = 2)",

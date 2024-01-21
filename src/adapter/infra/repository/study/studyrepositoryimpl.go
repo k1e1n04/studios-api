@@ -139,7 +139,7 @@ func (r *StudyRepositoryImpl) DeleteStudy(study *model_study.StudyEntity) error 
 // GetStudyByID はIDでスタディを取得
 func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity, error) {
 	var studyTableRecord table.Study
-	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ?", id).Error
+	err := r.db.Preload("Tags").First(&studyTableRecord, "id = ? AND studies.user_id = ?", id.Value, userID.Value).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -161,7 +161,11 @@ func (r *StudyRepositoryImpl) GetStudyByID(id string) (*model_study.StudyEntity,
 func (r *StudyRepositoryImpl) GetStudiesByTitleOrTags(title string, tagName string, pageable pagenation.Pageable) (*model_study.StudiesPage, error) {
 	var totalRecord int64
 	var studies []*table.Study
-	query := r.db.Preload("Tags").Table("studies").Model(&table.Study{}).Order("id DESC")
+	query := r.db.Preload("Tags").
+		Table("studies").
+		Model(&table.Study{}).
+		Where("studies.user_id = ?", userID.Value).
+		Order("id DESC")
 
 	if title != "" {
 		query = query.Where("title LIKE ?", "%"+title+"%")
