@@ -1,25 +1,8 @@
-# プロジェクト名
-| カテゴリー  | 項目       | 内容       |
-|:-------|:---------|:---------|
-| 環境     | AWS      | {アカウント名} |
-|        | リージョン    | {リージョン}  |
-|        | 開発環境     | {URL}    |
-|        | ステージング環境 | {URL}    |
-|        | 本番環境     | {URL}    |
-| ドキュメント | ガイドライン   | {URL}    |
-|        | 要件定義書    | {URL}    |
-|        | インフラ構成図  | {URL}    |
-|        | figma    | {URL}    |
-|        | リリース手順書  | {URL}    |
+# Studios
 
 # studios-api
 ## 概要
-このリポジトリは Lambda 関数を利用した Echo API のサンプルです。
-
-- standard-cdk-serverless
-- standard-nextjs-serverless
-
-を用いて開発する際に利用することを想定しています。
+このリポジトリはStudios の Lambda 関数を利用した Echo API です。
 
 | 項目          | 内容           |
 |:------------|:-------------|
@@ -39,11 +22,6 @@
 ├── package-lock.json
 ├── package.json
 ├── Dockerfile
-|── example(サンプルディレクトリ)
-|   ├── domain
-|   |   ├── model.example
-|   |   ├── repository.example
-|   ├── usecase.example
 |── base(ベースディレクトリ)
 |   ├── adapter
 |   |   ├── middlewares
