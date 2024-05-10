@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aws/aws-sdk-go v1.49.13
 	github.com/aws/aws-sdk-go-v2 v1.24.1
+	github.com/aws/aws-sdk-go-v2/config v1.26.3
 	github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider v1.32.0
 	github.com/awslabs/aws-lambda-go-api-proxy v0.16.0
 	github.com/go-playground/validator/v10 v10.16.0
@@ -13,6 +14,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/k1e1n04/gosmm/v2 v2.0.2
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/lestrrat-go/jwx v1.2.29
 	github.com/oklog/ulid v1.3.1
 	go.uber.org/dig v1.17.0
 	go.uber.org/zap v1.26.0
@@ -21,7 +23,6 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2/config v1.26.3 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.14 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.11 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.10 // indirect
@@ -49,7 +50,6 @@ require (
 	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
-	github.com/lestrrat-go/jwx v1.2.28 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -59,9 +59,9 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )
